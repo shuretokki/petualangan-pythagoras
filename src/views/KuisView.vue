@@ -1,94 +1,22 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { useQuizStore } from '@/stores/quiz';
 import { useDocument } from 'vuefire';
 import { doc } from 'firebase/firestore';
 import { db } from '@/firebase';
-import PytaSpeech from '@/components/PytaSpeech.vue';
 import type { Quiz } from '@/types/models';
 
 const router = useRouter();
 const quizStore = useQuizStore();
 
-// Fetch quiz from Firebase (or use sample data)
 const quizDoc = useDocument<Quiz>(doc(db, 'quizzes', 'quiz-pythagoras-1'));
 
-const usingSampleData = ref(false);
-
-// Sample quiz data as fallback
-const sampleQuiz: Quiz = {
-  id: 'quiz-pythagoras-1',
-  moduleId: 'pythagoras-v1',
-  title: 'Kuis Pythagoras Dasar',
-  questions: [
-    {
-      id: 'q1',
-      text: 'Sebuah segitiga siku-siku memiliki alas 3 cm dan tinggi 4 cm. Berapa panjang sisi miringnya?',
-      type: 'multiple-choice',
-      options: [
-        { text: '5 cm', isCorrect: true },
-        { text: '6 cm', isCorrect: false },
-        { text: '7 cm', isCorrect: false },
-        { text: '8 cm', isCorrect: false }
-      ]
-    },
-    {
-      id: 'q2',
-      text: 'Jika sisi miring adalah 13 cm dan alas adalah 5 cm, berapa tingginya?',
-      type: 'multiple-choice',
-      options: [
-        { text: '10 cm', isCorrect: false },
-        { text: '11 cm', isCorrect: false },
-        { text: '12 cm', isCorrect: true },
-        { text: '13 cm', isCorrect: false }
-      ]
-    },
-    {
-      id: 'q3',
-      text: 'Rumus Teorema Pythagoras adalah...',
-      type: 'multiple-choice',
-      options: [
-        { text: 'a² + b² = c²', isCorrect: true },
-        { text: 'a + b = c', isCorrect: false },
-        { text: 'a² - b² = c²', isCorrect: false },
-        { text: 'a × b = c²', isCorrect: false }
-      ]
-    },
-    {
-      id: 'q4',
-      text: 'Segitiga dengan sisi 6, 8, dan 10 adalah segitiga...',
-      type: 'multiple-choice',
-      options: [
-        { text: 'Segitiga siku-siku', isCorrect: true },
-        { text: 'Segitiga lancip', isCorrect: false },
-        { text: 'Segitiga tumpul', isCorrect: false },
-        { text: 'Segitiga sama sisi', isCorrect: false }
-      ]
-    },
-    {
-      id: 'q5',
-      text: 'Jika alas dan tinggi sama-sama 5 cm, berapa sisi miringnya? (√50 ≈ 7.07)',
-      type: 'multiple-choice',
-      options: [
-        { text: '5 cm', isCorrect: false },
-        { text: '7 cm', isCorrect: true },
-        { text: '10 cm', isCorrect: false },
-        { text: '25 cm', isCorrect: false }
-      ]
-    }
-  ]
-};
-
-onMounted(() => {
-  // Try to load from Firebase, fallback to sample data
-  if (quizDoc.value) {
-    quizStore.loadQuiz(quizDoc.value);
-  } else {
-    quizStore.loadQuiz(sampleQuiz);
-    usingSampleData.value = true;
-  }
-});
+watch(quizDoc, (newDoc) => {
+  if (newDoc && newDoc.questions && newDoc.questions.length > 0) {
+    quizStore.loadQuiz(newDoc);
+  } 
+}, { immediate: true });
 
 const currentQuestion = computed(() => quizStore.currentQuestion);
 const selectedAnswer = computed(() => 
@@ -111,11 +39,12 @@ const handlePrevious = () => {
 
 const restartQuiz = () => {
   quizStore.resetQuiz();
-  if (quizDoc.value) {
-    quizStore.loadQuiz(quizDoc.value);
-  } else {
-    quizStore.loadQuiz(sampleQuiz);
+  
+  if (!quizDoc.value) {
+    return;
   }
+  
+  quizStore.loadQuiz(quizDoc.value);
 };
 
 const goHome = () => {

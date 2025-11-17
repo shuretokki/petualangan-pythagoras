@@ -9,17 +9,16 @@ defineProps<{
 <template>
   <Message
     :closable="false"
-    severity="info"
+    severity="success"
     :pt="{
       root: {
         class: [
-          'max-w-2xl bg-white/95 rounded-2xl shadow-lg p-6',
-          'border-none', // Removes PrimeVue's default severity border
+          'min-w-sm max-w-sm px-8 py-4',
+          'border-none',
         ],
       },
-      wrapper: { class: 'flex items-center gap-4' }, // Applies the flex layout
-      icon: { class: 'text-6xl' }, // Styles the content of the #icon slot
-      text: { class: 'flex-1 p-0' }, // Styles the container of the default slot
+      wrapper: { class: 'flex' }, 
+      text: { class: '' },
     }"
   >
     <!-- 
@@ -27,7 +26,6 @@ defineProps<{
       with your custom emoji.
     -->
     <template #icon>
-      🐍
     </template>
 
     <!-- 
@@ -35,8 +33,8 @@ defineProps<{
       placed inside the styled 'text' container.
     -->
     <div class="flex-1">
-      <div class="text-sm font-semibold text-purple-600 mb-1">Pyta berkata:</div>
-      <div class="text-gray-800" v-html="text"></div>
+      <div class="text-sm font-semibold text-emerald-600 mb-1">Pyta:</div>
+      <div class="text-gray-800 text-sm" v-html="text"></div>
     </div>
   </Message>
 </template>

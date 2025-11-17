@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import PytaSpeech from '@/components/PytaSpeech.vue';
 
 const router = useRouter();
 const currentExample = ref(0);

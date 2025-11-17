@@ -1,23 +1,16 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth';
 import { useCollection } from 'vuefire';
 import { collection, addDoc, updateDoc, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '@/firebase';
 import type { Quiz, Question } from '@/types/models';
-import DataTable from 'primevue/datatable';
-import Column from 'primevue/column';
-import Button from 'primevue/button';
-import Dialog from 'primevue/dialog';
-import InputText from 'primevue/inputtext';
-import Textarea from 'primevue/textarea';
-import Password from 'primevue/password';
 
 const router = useRouter();
 const authStore = useAuthStore();
 
-const showLogin = ref(!authStore.isAuthenticated);
+const showLogin = computed(() => !authStore.isAuthenticated);
 const email = ref('');
 const password = ref('');
 const loginError = ref('');
@@ -50,16 +43,13 @@ const handleLogin = async () => {
   loginError.value = '';
   const result = await authStore.login(email.value, password.value);
   
-  if (result.success) {
-    showLogin.value = false;
-  } else {
+  if (!result.success) {
     loginError.value = result.error || 'Login failed';
   }
 };
 
 const handleLogout = async () => {
   await authStore.logout();
-  showLogin.value = true;
   router.push({ name: 'home' });
 };
 
@@ -156,9 +146,6 @@ const setCorrectAnswer = (optionIndex: number) => {
 };
 
 onMounted(() => {
-  if (!authStore.isAuthenticated) {
-    showLogin.value = true;
-  }
 });
 </script>
 
@@ -174,7 +161,7 @@ onMounted(() => {
           
           <div>
             <label class="block text-sm font-semibold mb-2">Password</label>
-            <Password v-model="password" :feedback="false" toggle-mask class="w-full" />
+            <Password v-model="password" :feedback="false" toggleMask class="w-full" />
           </div>
 
           <div v-if="loginError" class="text-red-600 text-sm">{{ loginError }}</div>
@@ -187,7 +174,7 @@ onMounted(() => {
       </Dialog>
 
       <!-- Admin Panel (when authenticated) -->
-      <div v-if="authStore.isAuthenticated && !showLogin">
+      <div v-if="authStore.isAuthenticated">
         <div class="flex justify-between items-center mb-8">
           <h1 class="text-4xl font-bold text-gray-800">Admin Panel - Quiz Management</h1>
           <Button label="Logout" @click="handleLogout" severity="danger" />

@@ -28,12 +28,11 @@ const router = createRouter({
       path: '/admin',
       name: 'admin',
       component: () => import('@/views/AdminView.vue'),
-      meta: { requiresAuth: true }
+      meta: { requiresAuth: false }
     }
   ]
 });
 
-// Navigation guard for admin routes
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
   

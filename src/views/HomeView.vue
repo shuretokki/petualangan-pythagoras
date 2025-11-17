@@ -59,18 +59,20 @@ const previousPage = () => {
             class="min-h-100dvh sm:min-h-[calc(100vh-10rem)] lg:min-h-[calc(100vh-12rem)] flex flex-col justify- max-w-sm"
         >
             <!-- Main Content Area -->
-            <div class="flex-1 flex flex-col justify-center items-center mb-16">
+            <div
+                class="flex-1 flex flex-col justify-center items-center mb-16 mt-4"
+            >
                 <!-- Page 0: Welcome -->
                 <div v-if="currentPage === 0" class="text-center space-y-8">
                     <!-- Mascot -->
                     <div
                         class="inline-block mb-6"
                         v-motion
-                        :initial="{ scale: 0, rotate: -180 }"
+                        :initial="{ opacity: 0, y: 30 }"
                         :enter="{
-                            scale: 1,
-                            rotate: 0,
-                            transition: { duration: 800, delay: 200 },
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 300, delay: 200 },
                         }"
                     >
                         <div class="text-9xl filter drop-shadow-lg">🐍</div>
@@ -83,25 +85,33 @@ const previousPage = () => {
                         :enter="{
                             opacity: 1,
                             y: 0,
-                            transition: { duration: 600, delay: 400 },
+                            transition: { duration: 400, delay: 200 },
                         }"
                     >
                         <h1
-                            class="font-recoleta text-6xl font-bold text-zinc-900 mb-4 leading-tight"
-                        >
-                            {{ currentPageData?.title }}
-                        </h1>
-                        <p class="text-xl text-zinc-600 font-light mb-8">
-                            {{ currentPageData?.subtitle }}
+                            class="font-recoleta text-6xl font-bold text-zinc-900 mb-2 leading-14"
+                    >
+                        {{ currentPageData?.title }}
+                    </h1>
+                    <p class="text-xl text-zinc-600 font-light"
+                    >
+                        {{ currentPageData?.subtitle }}
                         </p>
                     </div>
 
                     <!-- Description -->
-                    <div class="container max-w-2xl mx-auto">
-                        <p class="text-lg text-zinc-700 leading-relaxed mb-6">
+                    <div class="container mx-auto"
+                        v-motion
+                        :initial="{ opacity: 0, y: 30 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 500, delay: 200 },}"
+                        >
+                        <p class="text-lg text-zinc-700 leading-relaxed mb-8">
                             {{ currentPageData?.description }}
                         </p>
-                        <p class="text-xl font-medium text-indigo-600">
+                        <p class="text-xl font-medium text-emerald-600">
                             {{ currentPageData?.highlight }}
                         </p>
                     </div>
@@ -219,7 +229,7 @@ const previousPage = () => {
                             :enter="{
                                 opacity: 1,
                                 x: 0,
-                                transition: { duration: 800, delay: 400 },
+                                transition: { duration: 800, delay: 200 },
                             }"
                         >
                             <p class="text-sm text-zinc-700 mb-2">
@@ -277,15 +287,15 @@ const previousPage = () => {
                         :enter="{
                             opacity: 1,
                             y: 0,
-                            transition: { duration: 600, delay: 400 },
+                            transition: { duration: 600, delay: 200 },
                         }"
                     >
                         <h1
-                            class="font-recoleta text-6xl font-bold text-zinc-900 mb-4"
+                            class="font-recoleta text-6xl font-bold text-zinc-900 mb-2"
                         >
                             {{ currentPageData?.title }}
                         </h1>
-                        <p class="text-xl text-zinc-600 font-light mb-8">
+                        <p class="text-xl text-zinc-600 font-light">
                             {{ currentPageData?.subtitle }}
                         </p>
                     </div>
@@ -299,7 +309,7 @@ const previousPage = () => {
                             y: 0,
                             transition: { duration: 600, delay: 600 },
                         }"
-                        class="flex flex-col gap-2 max-w-2xl mx-auto"
+                        class="flex flex-col max-w-2xl mx-auto"
                     >
                         <p class="text-lg text-zinc-700 leading-relaxed mb-8">
                             {{ currentPageData?.description }}
@@ -360,7 +370,7 @@ const previousPage = () => {
                         :class="
                             currentPage === index
                                 ? 'w-12 h-3 bg-emerald-500'
-                                : 'w-3 h-3 bg-emerald-300 hover:bg-emerald-400'
+                                : 'w-3 h-3 bg-emerald-300 hover:bg-emerald-200'
                         "
                     ></button>
                 </div>
