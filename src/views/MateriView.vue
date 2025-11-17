@@ -115,7 +115,6 @@ const onDragStart = (triangleIndex: number) => {
                     </div>
                 </div>
 
-                <!-- Formula Visualization (Steps 3-5) -->
                 <div
                     v-if="currentStep >= 3 && currentStep <= 5"
                     class="flex justify-center mb-0 px-4"
