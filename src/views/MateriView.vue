@@ -130,7 +130,7 @@ const onDragStart = (triangleIndex: number) => {
                         }"
                     >
                         <div
-                            class="font-recoleta text-zinc-800 overflow-x-auto"
+                            class="font-recoleta text-zinc-700 overflow-x-auto"
                         >
                             <div
                                 v-if="currentStep >= 3"
