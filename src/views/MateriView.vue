@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, watch, useTemplateRef } from "vue";
+import { ref, computed } from "vue";
 import { useRouter } from "vue-router";
-import { Drag, Drop } from "vue-easy-dnd";
 
 const router = useRouter();
 const currentStep = ref(0);
@@ -54,14 +53,6 @@ const previousStep = () => {
         currentStep.value--;
     }
 };
-
-const onDrop = (event: any) => {
-    console.log("Dropped:", event, event.index, event.data);
-};
-
-const onDragStart = (triangleIndex: number) => {
-    console.log("Dragging:", triangleIndex);
-};
 </script>
 <template>
     <div class="flex flex-col items-center justify-center">
@@ -100,17 +91,15 @@ const onDragStart = (triangleIndex: number) => {
                 >
                     <div class="p-4 sm:p-6 md:p-8 w-full max-w-lg">
                         <div class="relative w-full max-w-[400px] mx-auto">
-                            <drop
-                                @drop="onDrop"
-                                mode="cut"
-                                class="drop w-full h-full aspect-square bg-gray-200 flex items-center justify-center"
+                            <div
+                                class="w-full h-full aspect-square bg-gray-200 flex items-center justify-center"
                             >
                                 <div
                                     class="text-zinc-400 text-base px-4 text-center"
                                 >
                                     Susun segitiga di sini
                                 </div>
-                            </drop>
+                            </div>
                         </div>
                     </div>
                 </div>
