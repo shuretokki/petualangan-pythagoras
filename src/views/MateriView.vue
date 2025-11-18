@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, useTemplateRef } from "vue";
 import { useRouter } from "vue-router";
 
 const router = useRouter();
@@ -37,6 +37,13 @@ const steps = [
             'Tadaaa! Kita telah membuktikan:<br><br><strong class="text-2xl font-recoleta">a² + b² = c²</strong><br><br>Ini adalah <strong>Teorema Pythagoras</strong>!',
     },
 ];
+
+// const triangle = useTemplateRef("triangle");
+// const spot = useTemplateRef("spot");
+
+// const drag = (e) => console.log(e.target);
+
+// const drop = (e) => console.log(e.target);
 
 const currentStepData = computed(() => steps[currentStep.value]);
 
