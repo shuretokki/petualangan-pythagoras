@@ -1,27 +1,64 @@
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import type { Quiz, Question } from '@/types/models';
+import { defineStore } from "pinia";
+import { ref, computed } from "vue";
+import type { Quiz, Question, Difficulty } from "@/types/models";
 
-export const useQuizStore = defineStore('quiz', () => {
-  const currentQuiz = ref<Quiz | null>(null);
+export const useQuizStore = defineStore("quiz", () => {
+  // The full data loaded from DB
+  const quizBank = ref<Quiz | null>(null);
+
+  // The subset of questions for the current session
+  const activeQuestions = ref<Question[]>([]);
+
   const currentQuestionIndex = ref(0);
   const userAnswers = ref<Map<string, string>>(new Map());
   const score = ref(0);
   const quizCompleted = ref(false);
+  const currentDifficulty = ref<Difficulty | null>(null);
 
+  // Computed properties now rely on activeQuestions
   const currentQuestion = computed(() => {
-    if (!currentQuiz.value || currentQuestionIndex.value >= currentQuiz.value.questions.length) {
+    if (
+      !activeQuestions.value.length ||
+      currentQuestionIndex.value >= activeQuestions.value.length
+    ) {
       return null;
     }
-    return currentQuiz.value.questions[currentQuestionIndex.value];
+    return activeQuestions.value[currentQuestionIndex.value];
   });
 
-  const totalQuestions = computed(() => {
-    return currentQuiz.value?.questions.length || 0;
-  });
+  const totalQuestions = computed(() => activeQuestions.value.length);
 
-  const loadQuiz = (quiz: Quiz) => {
-    currentQuiz.value = quiz;
+  const getUserAnswer = (questionId: string) => {
+    return userAnswers.value.get(questionId);
+  };
+
+  // Load the full quiz bank (usually from Firebase)
+  const loadQuizBank = (quiz: Quiz) => {
+    quizBank.value = quiz;
+  };
+
+  // Start a session: Filter -> Shuffle -> Slice(5)
+  const startQuizSession = (difficulty: Difficulty) => {
+    if (!quizBank.value || !quizBank.value.questions) return;
+
+    currentDifficulty.value = difficulty;
+
+    // 1. Filter by difficulty
+    const filtered = quizBank.value.questions.filter(
+      (q) => q.difficulty === difficulty,
+    );
+
+    // 2. Shuffle (Fisher-Yates algorithm)
+    const shuffled = [...filtered];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+
+    // 3. Limit to 5
+    activeQuestions.value = shuffled.slice(0, 5);
+
+    // Reset state
     currentQuestionIndex.value = 0;
     userAnswers.value = new Map();
     score.value = 0;
@@ -48,14 +85,12 @@ export const useQuizStore = defineStore('quiz', () => {
   };
 
   const calculateFinalScore = () => {
-    if (!currentQuiz.value) return;
+    if (activeQuestions.value.length === 0) return;
 
     let correctCount = 0;
-    currentQuiz.value.questions.forEach((question: Question) => {
+    activeQuestions.value.forEach((question) => {
       const userAnswer = userAnswers.value.get(question.id);
-      const correctOption = question.options.find((opt) => opt.isCorrect);
-      
-      if (userAnswer && correctOption && userAnswer === correctOption.text) {
+      if (userAnswer && userAnswer === question.correctAnswer) {
         correctCount++;
       }
     });
@@ -64,30 +99,34 @@ export const useQuizStore = defineStore('quiz', () => {
   };
 
   const resetQuiz = () => {
-    currentQuestionIndex.value = 0;
-    userAnswers.value = new Map();
-    score.value = 0;
-    quizCompleted.value = false;
-  };
-
-  const getUserAnswer = (questionId: string) => {
-    return userAnswers.value.get(questionId);
+    // When restarting, we might want to re-shuffle or keep same.
+    // Usually "Try Again" means same level, new questions if available.
+    if (currentDifficulty.value) {
+      startQuizSession(currentDifficulty.value);
+    } else {
+      // Fallback
+      currentQuestionIndex.value = 0;
+      userAnswers.value = new Map();
+      score.value = 0;
+      quizCompleted.value = false;
+    }
   };
 
   return {
-    currentQuiz,
+    quizBank,
+    activeQuestions,
+    currentQuestion,
     currentQuestionIndex,
+    totalQuestions,
     userAnswers,
     score,
     quizCompleted,
-    currentQuestion,
-    totalQuestions,
-    loadQuiz,
+    loadQuizBank,
+    startQuizSession,
     selectAnswer,
     nextQuestion,
     previousQuestion,
-    calculateFinalScore,
     resetQuiz,
-    getUserAnswer
+    getUserAnswer,
   };
 });

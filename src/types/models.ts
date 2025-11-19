@@ -9,19 +9,22 @@ export interface Module {
 
 export interface QuestionOption {
   text: string;
-  isCorrect: boolean;
 }
 
+export type Difficulty = "easy" | "medium" | "hard";
+
 export interface Question {
-  id: string; // Use nanoid or uuid for unique IDs within the array
+  id: string;
   text: string;
-  type: 'multiple-choice' | 'fill-in-the-blank';
+  type: "multiple-choice"; // Simplified for this context
   options: QuestionOption[];
+  correctAnswer: string; // Explicitly storing correct answer string for easier comparison
+  difficulty: Difficulty;
+  imageUrl?: string; // Optional image URL
 }
 
 export interface Quiz {
-  id: string;
-  moduleId: string; // Foreign key to modules collection
+  id?: string;
   title: string;
-  questions: Question[]; // Questions are embedded in the quiz document
+  questions: Question[];
 }

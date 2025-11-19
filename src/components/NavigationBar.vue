@@ -1,5 +1,8 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from "vue-router";
+import { computed } from "vue";
+import Button from "primevue/button";
+import Toolbar from "primevue/toolbar";
 
 const router = useRouter();
 const route = useRoute();
@@ -11,23 +14,40 @@ const navigateTo = (routeName: string) => {
 const isActive = (routeName: string) => {
     return route.name === routeName;
 };
+
+const isVioletTheme = computed(() => {
+    return ["contoh-soal", "kuis"].includes(route.name as string);
+});
 </script>
 
 <template>
     <Toolbar
         unstyled
         :pt="{
-            root: 'flex flex-col items-center gap-1',
+            root: 'flex flex-col items-center gap-0 pb-2 w-full max-w-sm mx-auto',
         }"
     >
         <template #start>
-            <div class="flex items-center gap-3 my-2">
-                <span class="text-3xl">🐍</span>
+            <div class="flex items-center gap-3 my-3">
+                <span
+                    class="text-3xl transition-transform hover:scale-110 cursor-default"
+                    >🐍</span
+                >
                 <div>
-                    <h1 class="font-recoleta text-xl font-bold text-slate-900">
+                    <h1
+                        class="font-recoleta text-xl font-bold leading-none transition-colors duration-500"
+                        :class="
+                            isVioletTheme ? 'text-slate-800' : 'text-slate-900'
+                        "
+                    >
                         Pythagoras
                     </h1>
-                    <p class="text-xs text-slate-500 font-light">
+                    <p
+                        class="text-xs font-light uppercase tracking-wider mt-1 transition-colors duration-500"
+                        :class="
+                            isVioletTheme ? 'text-violet-500' : 'text-slate-500'
+                        "
+                    >
                         Petualangan Matematika
                     </p>
                 </div>
@@ -35,36 +55,31 @@ const isActive = (routeName: string) => {
         </template>
 
         <template #end>
-            <div class="flex gap-2 mb-4">
+            <div class="flex flex-wrap justify-center gap-1 w-full px-2">
                 <Button
-                    label="Home"
+                    v-for="item in [
+                        { label: 'Home', name: 'home' },
+                        { label: 'Materi', name: 'materi' },
+                        { label: 'Contoh', name: 'contoh-soal' },
+                        { label: 'Kuis', name: 'kuis' },
+                    ]"
+                    :key="item.name"
+                    :label="item.label"
                     text
                     rounded
-                    @click="navigateTo('home')"
-                    :severity="isActive('home') ? 'primary' : 'secondary'"
-                />
-                <Button
-                    label="Materi"
-                    text
-                    rounded
-                    @click="navigateTo('materi')"
-                    :severity="isActive('materi') ? 'primary' : 'secondary'"
-                />
-                <Button
-                    label="Contoh Soal"
-                    text
-                    rounded
-                    @click="navigateTo('contoh-soal')"
-                    :severity="
-                        isActive('contoh-soal') ? 'primary' : 'secondary'
-                    "
-                />
-                <Button
-                    label="Kuis"
-                    text
-                    rounded
-                    @click="navigateTo('kuis')"
-                    :severity="isActive('kuis') ? 'primary' : 'secondary'"
+                    plain
+                    size="small"
+                    @click="navigateTo(item.name)"
+                    class="!px-3 !py-1.5 transition-all duration-300"
+                    :class="[
+                        isActive(item.name)
+                            ? isVioletTheme
+                                ? '!bg-violet-100 !text-violet-700 font-bold'
+                                : '!bg-emerald-100 !text-emerald-700 font-bold'
+                            : isVioletTheme
+                              ? '!text-slate-500 hover:!bg-violet-50 hover:!text-violet-600'
+                              : '!text-slate-500 hover:!bg-emerald-50 hover:!text-emerald-600',
+                    ]"
                 />
             </div>
         </template>

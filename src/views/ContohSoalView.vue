@@ -1,174 +1,286 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, computed } from "vue";
+import { useRouter } from "vue-router";
+import Button from "primevue/button";
+import PytaSpeech from "../components/PytaSpeech.vue";
 
 const router = useRouter();
 const currentExample = ref(0);
+const currentStepIndex = ref(-1);
 
 const examples = [
-  {
-    problem: 'Sebuah segitiga siku-siku memiliki alas (a) = 8 cm dan tinggi (b) = 6 cm. Berapa panjang sisi miringnya (c)?',
-    steps: [
-      { text: 'Gunakan rumus Pythagoras:', formula: 'a² + b² = c²' },
-      { text: 'Substitusi nilai a dan b:', formula: '8² + 6² = c²' },
-      { text: 'Hitung kuadratnya:', formula: '64 + 36 = c²' },
-      { text: 'Jumlahkan:', formula: '100 = c²' },
-      { text: 'Akar kuadratkan kedua sisi:', formula: 'c = √100 = 10 cm' }
-    ],
-    answer: '10 cm'
-  },
-  {
-    problem: 'Sebuah segitiga siku-siku memiliki alas (a) = 15 cm dan tinggi (b) = 8 cm. Berapa panjang sisi miringnya (c)?',
-    steps: [
-      { text: 'Gunakan rumus Pythagoras:', formula: 'a² + b² = c²' },
-      { text: 'Substitusi nilai a dan b:', formula: '15² + 8² = c²' },
-      { text: 'Hitung kuadratnya:', formula: '225 + 64 = c²' },
-      { text: 'Jumlahkan:', formula: '289 = c²' },
-      { text: 'Akar kuadratkan kedua sisi:', formula: 'c = √289 = 17 cm' }
-    ],
-    answer: '17 cm'
-  }
+    {
+        title: "Segitiga 1",
+        problem:
+            "Sebuah segitiga siku-siku memiliki alas <strong>a = 8 cm</strong> dan tinggi <strong>b = 6 cm</strong>. Berapa panjang sisi miringnya <strong>(c)</strong>?",
+        steps: [
+            { label: "Rumus", formula: "a² + b² = c²" },
+            { label: "Substitusi", formula: "8² + 6² = c²" },
+            { label: "Kuadrat", formula: "64 + 36 = c²" },
+            { label: "Jumlah", formula: "100 = c²" },
+            { label: "Akar", formula: "c = √100" },
+        ],
+        answer: "10 cm",
+    },
+    {
+        title: "Segitiga 2",
+        problem:
+            "Sebuah segitiga siku-siku memiliki alas <strong>a = 15 cm</strong> dan tinggi <strong>b = 8 cm</strong>. Berapa panjang sisi miringnya <strong>(c)</strong>?",
+        steps: [
+            { label: "Rumus", formula: "a² + b² = c²" },
+            { label: "Substitusi", formula: "15² + 8² = c²" },
+            { label: "Kuadrat", formula: "225 + 64 = c²" },
+            { label: "Jumlah", formula: "289 = c²" },
+            { label: "Akar", formula: "c = √289" },
+        ],
+        answer: "17 cm",
+    },
 ];
 
-const currentStepIndex = ref(0);
-const showAllSteps = ref(false);
-
 const currentExampleData = computed(() => examples[currentExample.value]);
+const isExampleFinished = computed(
+    () => currentStepIndex.value >= currentExampleData.value.steps.length - 1,
+);
 
-const nextStep = () => {
-  if (currentStepIndex.value < currentExampleData.value!.steps.length - 1) {
-    currentStepIndex.value++;
-  } else {
-    showAllSteps.value = true;
-  }
+const handleNext = () => {
+    if (!isExampleFinished.value) {
+        currentStepIndex.value++;
+        return;
+    }
+
+    if (currentExample.value < examples.length - 1) {
+        currentExample.value++;
+        currentStepIndex.value = -1;
+    } else {
+        router.push({ name: "kuis" });
+    }
 };
 
-const nextExample = () => {
-  if (currentExample.value < examples.length - 1) {
-    currentExample.value++;
-    currentStepIndex.value = 0;
-    showAllSteps.value = false;
-  } else {
-    router.push({ name: 'kuis' });
-  }
-};
-
-const previousExample = () => {
-  if (currentExample.value > 0) {
-    currentExample.value--;
-    currentStepIndex.value = 0;
-    showAllSteps.value = false;
-  } else {
-    router.push({ name: 'materi' });
-  }
+const handleBack = () => {
+    if (currentStepIndex.value > -1) {
+        currentStepIndex.value--;
+    } else if (currentExample.value > 0) {
+        currentExample.value--;
+        currentStepIndex.value =
+            examples[currentExample.value].steps.length - 1;
+    } else {
+        router.push({ name: "materi" });
+    }
 };
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-orange-400 via-red-400 to-pink-400 pt-20">
-    <div class="container mx-auto px-6 py-12">
-      <div class="max-w-4xl mx-auto">
-        <!-- Title -->
-        <h1 
-          class="text-5xl font-bold text-white text-center mb-8 drop-shadow-lg"
-          v-motion
-          :initial="{ opacity: 0, y: -50 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-        >
-          Contoh Soal {{ currentExample + 1 }}
-        </h1>
-
-        <!-- Pyta Speech -->
-        <div class="flex justify-center mb-8">
-          <PytaSpeech 
-            text="Mari kita lihat bagaimana cara menggunakan rumus Pythagoras untuk menyelesaikan soal!"
-            v-motion
-            :initial="{ opacity: 0, scale: 0.8 }"
-            :enter="{ opacity: 1, scale: 1, transition: { duration: 400, delay: 200 } }"
-          />
-        </div>
-
-        <!-- Problem Statement -->
-        <div 
-          class="bg-white/95 rounded-2xl p-8 shadow-xl mb-8"
-          v-motion
-          :initial="{ opacity: 0, y: 30 }"
-          :enter="{ opacity: 1, y: 0, transition: { duration: 500, delay: 400 } }"
-        >
-          <h2 class="text-2xl font-bold text-gray-800 mb-4">Soal:</h2>
-          <p class="text-xl text-gray-700">{{ currentExampleData?.problem }}</p>
-        </div>
-
-        <!-- Solution Steps -->
-        <div class="bg-white/95 rounded-2xl p-8 shadow-xl mb-8">
-          <h2 class="text-2xl font-bold text-gray-800 mb-6">Penyelesaian:</h2>
-          
-          <div class="space-y-4">
+    <div
+        class="flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden"
+    >
+        <!-- Background Decoration -->
+        <div class="fixed inset-0 overflow-hidden pointer-events-none">
             <div
-              v-for="(step, index) in currentExampleData?.steps"
-              :key="index"
-              v-show="showAllSteps || index <= currentStepIndex"
-              v-motion
-              :initial="{ opacity: 0, x: -30 }"
-              :enter="{ opacity: 1, x: 0, transition: { duration: 400, delay: index * 200 } }"
-              class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-4 border-l-4 border-purple-500"
-            >
-              <div class="text-gray-700 mb-2">{{ index + 1 }}. {{ step.text }}</div>
-              <div class="text-2xl font-mono font-bold text-purple-600">{{ step.formula }}</div>
-            </div>
-          </div>
-
-          <!-- Show Next Step Button -->
-          <div v-if="!showAllSteps" class="mt-6 text-center">
-            <button
-              @click="nextStep"
-              class="px-8 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-            >
-              {{ currentStepIndex < currentExampleData!.steps.length - 1 ? 'Langkah Selanjutnya →' : 'Lihat Jawaban 🎉' }}
-            </button>
-          </div>
-
-          <!-- Final Answer -->
-          <div 
-            v-if="showAllSteps"
-            v-motion
-            :initial="{ opacity: 0, scale: 0.8 }"
-            :enter="{ opacity: 1, scale: 1, transition: { duration: 500, delay: 1000 } }"
-            class="mt-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl p-6 text-center"
-          >
-            <div class="text-xl mb-2">Jawaban Akhir:</div>
-            <div class="text-4xl font-bold">{{ currentExampleData?.answer }}</div>
-          </div>
-        </div>
-
-        <!-- Navigation -->
-        <div class="flex justify-between items-center mt-12">
-          <button
-            @click="previousExample"
-            class="px-6 py-3 bg-white text-orange-600 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-          >
-            ← {{ currentExample === 0 ? 'Kembali ke Materi' : 'Contoh Sebelumnya' }}
-          </button>
-
-          <div class="flex gap-2">
-            <div
-              v-for="(_example, index) in examples"
-              :key="index"
-              class="w-3 h-3 rounded-full transition-all duration-200"
-              :class="currentExample === index ? 'bg-white w-8' : 'bg-white/50'"
+                class="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-violet-200/30 blur-3xl animate-pulse"
             ></div>
-          </div>
-
-          <button
-            v-if="showAllSteps"
-            @click="nextExample"
-            class="px-6 py-3 bg-white text-orange-600 rounded-full font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-          >
-            {{ currentExample === examples.length - 1 ? 'Lanjut ke Kuis →' : 'Contoh Selanjutnya →' }}
-          </button>
-          <div v-else></div>
+            <div
+                class="absolute top-[40%] -right-[10%] w-[60%] h-[60%] rounded-full bg-fuchsia-200/20 blur-3xl animate-pulse"
+                style="animation-delay: 1s"
+            ></div>
+            <div
+                class="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-indigo-200/20 blur-3xl animate-pulse"
+                style="animation-delay: 2s"
+            ></div>
         </div>
-      </div>
+
+        <div class="min-h-[100dvh] w-full max-w-sm flex flex-col relative z-10">
+            <!-- Main Content Area -->
+            <div class="flex-1 flex flex-col items-center pb-32 pt-8 px-6">
+                <!-- Header -->
+                <div class="text-center mb-6">
+                    <h1
+                        class="font-recoleta text-3xl sm:text-4xl font-bold text-slate-800 leading-tight"
+                        v-motion
+                        :initial="{ opacity: 0, y: -20 }"
+                        :enter="{
+                            opacity: 1,
+                            y: 0,
+                            transition: { duration: 500 },
+                        }"
+                        :key="currentExample"
+                    >
+                        Contoh Soal {{ currentExample + 1 }}
+                    </h1>
+                </div>
+
+                <!-- Pyta Speech -->
+                <div
+                    class="flex justify-center mb-8 w-full min-h-[80px] items-center"
+                >
+                    <PytaSpeech
+                        text="Mari kita selesaikan soal ini bersama-sama! Tekan lanjut untuk melihat langkahnya."
+                        variant="violet"
+                        v-motion
+                        :initial="{ opacity: 0, scale: 0.9 }"
+                        :enter="{
+                            opacity: 1,
+                            scale: 1,
+                            transition: { duration: 300 },
+                        }"
+                    />
+                </div>
+
+                <!-- Problem Statement -->
+                <div
+                    class="w-full mb-8 bg-white/50 border-l-4 border-violet-400 pl-4 py-2 rounded-r-lg backdrop-blur-sm"
+                    v-motion
+                    :initial="{ opacity: 0, x: -20 }"
+                    :enter="{ opacity: 1, x: 0, transition: { duration: 400 } }"
+                    :key="'problem-' + currentExample"
+                >
+                    <div
+                        class="text-lg text-slate-600 leading-relaxed"
+                        v-html="currentExampleData.problem"
+                    ></div>
+                </div>
+
+                <!-- Steps Container -->
+                <div class="w-full space-y-3">
+                    <div
+                        v-for="(step, index) in currentExampleData.steps"
+                        :key="index"
+                        class="flex items-center gap-3"
+                        v-show="index <= currentStepIndex"
+                        v-motion
+                        :initial="{ opacity: 0, x: -10 }"
+                        :enter="{
+                            opacity: 1,
+                            x: 0,
+                            transition: { duration: 300 },
+                        }"
+                    >
+                        <!-- Step Number -->
+                        <div
+                            class="flex-shrink-0 w-8 h-8 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 text-xs font-bold border border-violet-200"
+                        >
+                            {{ index + 1 }}
+                        </div>
+
+                        <!-- Step Content -->
+                        <div
+                            class="flex-1 bg-white/70 border border-violet-100 rounded-xl px-4 py-3 flex justify-between items-center backdrop-blur-sm"
+                        >
+                            <span
+                                class="text-[10px] text-slate-400 font-bold tracking-wider uppercase"
+                                >{{ step.label }}</span
+                            >
+                            <span
+                                class="font-recoleta text-lg text-slate-800"
+                                >{{ step.formula }}</span
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Final Answer Reveal -->
+                    <div
+                        v-if="isExampleFinished"
+                        class="mt-8 w-full text-center"
+                        v-motion
+                        :initial="{ opacity: 0, scale: 0.9 }"
+                        :enter="{
+                            opacity: 1,
+                            scale: 1,
+                            transition: {
+                                type: 'spring',
+                                stiffness: 200,
+                                damping: 15,
+                            },
+                        }"
+                    >
+                        <div
+                            class="inline-block px-10 py-5 bg-white border-2 border-violet-100 rounded-3xl"
+                        >
+                            <span
+                                class="text-violet-300 text-[10px] font-bold uppercase tracking-widest mb-1 block"
+                                >Jawaban Akhir</span
+                            >
+                            <div
+                                class="font-recoleta text-4xl text-violet-600 font-bold tracking-wide"
+                            >
+                                {{ currentExampleData.answer }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Floating Navbar -->
+            <div
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-full z-[90]"
+            >
+                <div
+                    class="relative flex items-center justify-between px-2 h-16"
+                >
+                    <!-- Back Button -->
+                    <Button
+                        @click="handleBack"
+                        variant="text"
+                        class="!p-0 w-12 h-12 flex items-center justify-center rounded-full text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors z-10"
+                    >
+                        <svg
+                            class="w-6 h-6"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M15 19l-7-7 7-7"
+                            ></path>
+                        </svg>
+                    </Button>
+
+                    <!-- Center Dots (Violet) -->
+                    <div
+                        class="absolute left-1/2 -translate-x-1/2 flex gap-2 pointer-events-none"
+                    >
+                        <div
+                            v-for="(_ex, index) in examples"
+                            :key="index"
+                            class="rounded-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
+                            :class="
+                                currentExample === index
+                                    ? 'w-8 h-2 bg-violet-500'
+                                    : 'w-2 h-2 bg-violet-200'
+                            "
+                        ></div>
+                    </div>
+
+                    <!-- Next Button (Black Text) -->
+                    <Button
+                        @click="handleNext"
+                        variant="text"
+                        class="flex items-center gap-2 text-zinc-900 font-bold hover:bg-zinc-50 px-4 py-2 rounded-full transition-colors z-10"
+                    >
+                        <span v-if="!isExampleFinished">Lanjut</span>
+                        <span v-else-if="currentExample < examples.length - 1"
+                            >Soal 2</span
+                        >
+                        <span v-else>Kuis</span>
+
+                        <svg
+                            class="w-4 h-4"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                        >
+                            <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M9 5l7 7-7 7"
+                            ></path>
+                        </svg>
+                    </Button>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 </template>
