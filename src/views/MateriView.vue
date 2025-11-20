@@ -1,11 +1,6 @@
 <script setup lang="ts">
-import { ref, computed, reactive, onUnmounted, watch } from "vue";
-import { useRouter } from "vue-router";
-import Button from "primevue/button";
-import PytaSpeech from "../components/PytaSpeech.vue";
-
 const router = useRouter();
-const currentStep = ref(0); // Starts at 0 (First step of content)
+const currentStep = ref(0);
 
 interface Triangle {
     id: number;
@@ -22,7 +17,6 @@ interface Triangle {
     isDragging: boolean;
 }
 
-// Symmetrical 2x2 initial grid
 const triangles = reactive<Triangle[]>([
     {
         id: 1,
@@ -90,7 +84,6 @@ let startElemY = 0;
 
 const isPuzzleComplete = computed(() => triangles.every((t) => t.isLocked));
 
-// Haptic Feedback
 watch(isPuzzleComplete, (newVal) => {
     if (newVal && navigator.vibrate) navigator.vibrate([50, 50, 50]);
 });
@@ -147,38 +140,44 @@ onUnmounted(() => {
     window.removeEventListener("pointerup", endDrag);
 });
 
+// Content from PDF "Hijau Biru Ilustrasi Alam Tugas Presentasi"
 const steps = [
     {
-        title: "Susun Puzzle",
+        title: "Rahasia Pythagoras",
         content:
-            "Ayo susun ke-4 segitiga ini ke dalam kotak di atas! Geser menggunakan jarimu.",
+            "Oke, di sini Pyta punya 4 segitiga siku-siku yang sama besar. Coba perhatikan sisi-sisinya ya!",
+    },
+    {
+        title: "Misi Menyusun",
+        content:
+            "Mari bantu Pyta menyusun <strong>hipotenusa</strong> dari keempat segitiga ini supaya membentuk bingkai persegi di tengahnya.",
     },
     {
         title: "Analisis Bentuk",
         content:
-            "Kerja bagus! Lihat, ada <strong>kotak kosong</strong> di tengah (warna putih). Luas kotak kecil itu adalah <strong class='text-emerald-600'>c²</strong>.",
+            "Taraaa! Inilah bentuk yang kita peroleh. Perhatikan ada <strong>persegi kecil</strong> di tengah (warna putih). Luasnya adalah <strong class='text-emerald-600'>c²</strong>.",
     },
     {
-        title: "Rumus Luas",
+        title: "Perhitungan Luas",
         content:
-            "Mari kita hitung luas kotak besar ini dengan dua cara. <br>Cara 1: <strong>(a + b)²</strong>. <br>Cara 2: <strong>4 Segitiga + Kotak Kecil</strong>.",
+            "Luas Persegi Besar = Luas Persegi Kecil + 4 × Luas Segitiga.<br>Dalam rumus: <strong>(a + b)² = c² + 4(½ab)</strong>",
     },
     {
         title: "Penyederhanaan",
         content:
-            "Jika kita jabarkan persamaannya, bagian yang sama akan saling menghilangkan! Perhatikan persamaan di bawah.",
+            "Kita jabarkan kedua ruas dan coret <strong>2ab</strong>. <br>Maka diperoleh: <strong>a² + b² = c²</strong>.",
     },
     {
-        title: "Terbukti!",
+        title: "Kesimpulan",
         content:
-            "Selamat! Kamu baru saja membuktikan rumus <strong>Teorema Pythagoras</strong> dengan matamu sendiri.",
+            "Nah, inilah <strong>Teorema Pythagoras</strong>! <br><em>a² + b² = c²</em> <br>(dengan c adalah hipotenusa).",
     },
 ];
 
 const currentStepData = computed(() => steps[currentStep.value]);
 
 const nextStep = () => {
-    if (currentStep.value === 0 && !isPuzzleComplete.value) return;
+    if (currentStep.value === 1 && !isPuzzleComplete.value) return;
     currentStep.value < steps.length - 1
         ? currentStep.value++
         : router.push({ name: "contoh-soal" });
@@ -206,7 +205,7 @@ const previousStep = () => {
         <div class="relative z-10 w-full max-w-sm flex flex-col min-h-screen">
             <div class="flex-1 flex flex-col items-center pb-32 pt-8 px-6">
                 <div
-                    class="text-[10px] font-bold text-emerald-600 tracking-widest uppercase mb-3 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 shadow-sm"
+                    class="text-[10px] font-bold text-emerald-600 tracking-widest uppercase mb-3"
                     v-motion
                     :initial="{ opacity: 0, y: -10 }"
                     :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }"
@@ -224,12 +223,120 @@ const previousStep = () => {
                     {{ currentStepData?.title }}
                 </h1>
 
-                <div class="flex justify-center mb-10 w-full z-20">
+                <div
+                    class="flex justify-center mb-10 w-full z-20 min-h-[120px] items-center"
+                >
                     <PytaSpeech :text="currentStepData?.content || ''" />
                 </div>
 
                 <div
-                    v-if="currentStep >= 0"
+                    v-if="currentStep === 0"
+                    class="w-full flex justify-center mb-8"
+                    v-motion
+                    :initial="{ opacity: 0, scale: 0.8 }"
+                    :enter="{ opacity: 1, scale: 1 }"
+                >
+                    <div class="relative w-64 h-64">
+                        <svg
+                            viewBox="0 0 200 200"
+                            class="w-full h-full drop-shadow-xl"
+                        >
+                            <circle
+                                cx="100"
+                                cy="100"
+                                r="60"
+                                fill="#10b981"
+                                opacity="0.1"
+                                class="animate-pulse"
+                            />
+
+                            <g class="animate-float-slow">
+                                <path
+                                    d="M60 40 L100 40 L60 70 Z"
+                                    fill="#fb7185"
+                                    stroke="#e11d48"
+                                    stroke-width="2"
+                                />
+                                <text
+                                    x="65"
+                                    y="60"
+                                    font-size="10"
+                                    fill="white"
+                                    font-weight="bold"
+                                >
+                                    1
+                                </text>
+                            </g>
+                            <g
+                                class="animate-float-medium"
+                                style="transform-origin: center"
+                            >
+                                <path
+                                    d="M140 60 L140 100 L110 100 Z"
+                                    fill="#60a5fa"
+                                    stroke="#2563eb"
+                                    stroke-width="2"
+                                />
+                                <text
+                                    x="130"
+                                    y="90"
+                                    font-size="10"
+                                    fill="white"
+                                    font-weight="bold"
+                                >
+                                    2
+                                </text>
+                            </g>
+                            <g class="animate-float-fast">
+                                <path
+                                    d="M60 140 L100 140 L60 110 Z"
+                                    fill="#34d399"
+                                    stroke="#059669"
+                                    stroke-width="2"
+                                />
+                                <text
+                                    x="70"
+                                    y="130"
+                                    font-size="10"
+                                    fill="white"
+                                    font-weight="bold"
+                                >
+                                    3
+                                </text>
+                            </g>
+                            <g
+                                class="animate-float-slow"
+                                style="animation-delay: 1s"
+                            >
+                                <path
+                                    d="M150 150 L150 110 L180 150 Z"
+                                    fill="#fbbf24"
+                                    stroke="#d97706"
+                                    stroke-width="2"
+                                />
+                                <text
+                                    x="160"
+                                    y="140"
+                                    font-size="10"
+                                    fill="white"
+                                    font-weight="bold"
+                                >
+                                    4
+                                </text>
+                            </g>
+                        </svg>
+                        <div class="absolute -bottom-4 w-full text-center">
+                            <p
+                                class="text-xs text-emerald-600 font-bold bg-emerald-50 px-3 py-1 rounded-full inline-block"
+                            >
+                                4 Segitiga Siku-Siku
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div
+                    v-if="currentStep >= 1"
                     class="w-full flex justify-center mb-4"
                     v-motion
                     :initial="{ opacity: 0, scale: 0.9 }"
@@ -241,7 +348,19 @@ const previousStep = () => {
                 >
                     <div class="relative w-full">
                         <div
-                            v-if="currentStep >= 1"
+                            v-if="isPuzzleComplete && currentStep === 1"
+                            class="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in duration-300"
+                        >
+                            <div
+                                class="bg-white/90 backdrop-blur text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1"
+                            >
+                                <i-lucide-check class="w-3 h-3" />
+                                Sempurna!
+                            </div>
+                        </div>
+
+                        <div
+                            v-if="currentStep >= 2"
                             class="absolute -left-4 top-1/2 -translate-y-1/2 flex flex-col items-center text-xs font-bold text-slate-400 h-[150px] justify-between z-20"
                             v-motion
                             :initial="{ opacity: 0 }"
@@ -252,7 +371,7 @@ const previousStep = () => {
                             <span class="font-serif italic">b</span>
                         </div>
                         <div
-                            v-if="currentStep >= 1"
+                            v-if="currentStep >= 2"
                             class="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center text-xs font-bold text-slate-400 w-[150px] justify-between z-20"
                             v-motion
                             :initial="{ opacity: 0 }"
@@ -264,13 +383,13 @@ const previousStep = () => {
                         </div>
 
                         <div
-                            class="w-full bg-white border-2 rounded-3xl overflow-hidden select-none touch-none transition-all duration-700 ease-in-out relative z-10"
+                            class="w-full bg-white border-2 rounded-lg overflow-hidden select-none touch-none transition-all duration-700 ease-in-out relative z-10"
                             :class="[
-                                currentStep >= 1
+                                currentStep >= 2
                                     ? 'h-[220px] border-zinc-100'
                                     : 'h-[450px]',
-                                isPuzzleComplete && currentStep === 0
-                                    ? 'border-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)]'
+                                isPuzzleComplete && currentStep === 1
+                                    ? 'border-emerald-400'
                                     : 'border-zinc-100',
                             ]"
                             style="
@@ -282,31 +401,7 @@ const previousStep = () => {
                             "
                         >
                             <div class="relative w-[300px] h-full mx-auto">
-                                <div
-                                    v-if="isPuzzleComplete && currentStep === 0"
-                                    class="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in duration-300"
-                                >
-                                    <div
-                                        class="bg-white/90 backdrop-blur text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm border border-emerald-100 flex items-center gap-1"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="12"
-                                            height="12"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            stroke-width="3"
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                        >
-                                            <path d="M20 6 9 17l-5-5" />
-                                        </svg>
-                                        Sempurna!
-                                    </div>
-                                </div>
-
-                                <template v-if="currentStep === 0">
+                                <template v-if="currentStep === 1">
                                     <div
                                         v-for="item in triangles"
                                         :key="'ghost-' + item.id"
@@ -373,7 +468,7 @@ const previousStep = () => {
                                     @pointerdown="(e) => startDrag(e, item)"
                                     class="absolute w-[100px] h-[50px] touch-none"
                                     :class="[
-                                        currentStep === 0
+                                        currentStep === 1
                                             ? item.isLocked
                                                 ? 'z-20 cursor-default'
                                                 : 'z-50 cursor-grab active:cursor-grabbing'
@@ -381,8 +476,8 @@ const previousStep = () => {
                                         item.isLocked
                                             ? 'opacity-100'
                                             : 'opacity-90',
-                                        item.isDragging && currentStep === 0
-                                            ? 'transition-none scale-110 drop-shadow-xl z-[100]'
+                                        item.isDragging && currentStep === 1
+                                            ? 'transition-none scale-110 z-[100]'
                                             : 'transition-all duration-500 ease-out',
                                     ]"
                                     :style="{
@@ -443,12 +538,12 @@ const previousStep = () => {
 
                                 <div
                                     v-if="
-                                        currentStep === 0 && !isPuzzleComplete
+                                        currentStep === 1 && !isPuzzleComplete
                                     "
                                     class="absolute bottom-4 w-full text-center"
                                 >
                                     <p
-                                        class="text-slate-400 text-xs bg-white/80 inline-block px-3 py-1 rounded-full backdrop-blur-sm border border-slate-100"
+                                        class="text-slate-400 text-xs bg-white/80 inline-block px-3 py-1 rounded-lg backdrop-blur-sm border border-slate-100"
                                     >
                                         Geser segitiga ke area putus-putus
                                     </p>
@@ -458,12 +553,12 @@ const previousStep = () => {
                     </div>
                 </div>
 
-                <div v-if="currentStep >= 2" class="w-full mt-4">
+                <div v-if="currentStep >= 3" class="w-full mt-4">
                     <div
                         class="w-full flex flex-col gap-6 items-center transition-all duration-500"
                     >
                         <div
-                            v-if="currentStep >= 2"
+                            v-if="currentStep >= 3"
                             class="w-full text-center"
                             v-motion
                             :initial="{ opacity: 0, y: 10 }"
@@ -471,7 +566,7 @@ const previousStep = () => {
                         >
                             <span
                                 class="text-[10px] text-zinc-400 uppercase tracking-widest font-bold mb-2 block"
-                                >Total Luas Kotak</span
+                                >Rumus Luas</span
                             >
                             <div
                                 class="text-xl sm:text-2xl text-zinc-700 font-recoleta leading-relaxed"
@@ -485,9 +580,8 @@ const previousStep = () => {
                                 >
                             </div>
                         </div>
-
                         <div
-                            v-if="currentStep >= 3"
+                            v-if="currentStep >= 4"
                             class="text-zinc-300 text-lg animate-bounce"
                             v-motion
                             :initial="{ opacity: 0 }"
@@ -495,9 +589,8 @@ const previousStep = () => {
                         >
                             ↓
                         </div>
-
                         <div
-                            v-if="currentStep >= 3"
+                            v-if="currentStep >= 4"
                             class="w-full text-center"
                             v-motion
                             :initial="{ opacity: 0, y: 10 }"
@@ -505,7 +598,7 @@ const previousStep = () => {
                         >
                             <span
                                 class="text-[10px] text-zinc-400 uppercase tracking-widest font-bold mb-2 block"
-                                >Uraikan & Coret</span
+                                >Jabarkan</span
                             >
                             <div
                                 class="text-lg sm:text-xl text-zinc-700 font-recoleta leading-relaxed"
@@ -513,27 +606,22 @@ const previousStep = () => {
                                 <span class="font-serif italic">a²</span> +
                                 <span
                                     class="relative inline-block text-zinc-400 font-serif italic"
-                                >
-                                    2ab
-                                    <span
+                                    >2ab<span
                                         class="absolute top-1/2 left-0 w-full h-0.5 bg-rose-400 -rotate-12 animate-strike"
-                                    ></span>
-                                </span>
+                                    ></span
+                                ></span>
                                 + <span class="font-serif italic">b²</span> =
                                 <span
                                     class="relative inline-block text-zinc-400 font-serif italic"
-                                >
-                                    2ab
-                                    <span
+                                    >2ab<span
                                         class="absolute top-1/2 left-0 w-full h-0.5 bg-rose-400 -rotate-12 animate-strike"
-                                    ></span>
-                                </span>
+                                    ></span
+                                ></span>
                                 + <span class="font-serif italic">c²</span>
                             </div>
                         </div>
-
                         <div
-                            v-if="currentStep >= 4"
+                            v-if="currentStep >= 5"
                             class="text-zinc-300 text-lg animate-bounce"
                             v-motion
                             :initial="{ opacity: 0 }"
@@ -541,10 +629,9 @@ const previousStep = () => {
                         >
                             ↓
                         </div>
-
                         <div
-                            v-if="currentStep >= 4"
-                            class="w-full text-center"
+                            v-if="currentStep >= 5"
+                            class="w-full text-center relative"
                             v-motion
                             :initial="{ opacity: 0, scale: 0.8 }"
                             :enter="{
@@ -557,14 +644,13 @@ const previousStep = () => {
                                 },
                             }"
                         >
-                            <div class="relative inline-block px-4 py-2">
+                            <div
+                                class="relative inline-block px-8 py-4 bg-emerald-600 rounded-lg text-white transform hover:scale-105 transition-transform duration-300 cursor-default border-2 border-emerald-500 shadow-lg"
+                            >
                                 <span
-                                    class="text-4xl font-bold font-recoleta tracking-wide text-emerald-600"
+                                    class="text-3xl font-bold font-recoleta tracking-wide"
+                                    >a² + b² = c²</span
                                 >
-                                    <span class="font-serif italic">a²</span> +
-                                    <span class="font-serif italic">b²</span> =
-                                    <span class="font-serif italic">c²</span>
-                                </span>
                             </div>
                         </div>
                     </div>
@@ -573,28 +659,17 @@ const previousStep = () => {
         </div>
 
         <div
-            class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-zinc-200/60 rounded-full z-50 shadow-sm"
+            class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-zinc-200/60 rounded-full z-50"
         >
             <div class="relative flex items-center justify-between px-2 h-16">
                 <Button
                     v-if="currentStep > 0"
                     @click="previousStep"
                     variant="text"
-                    class="!p-0 w-12 h-12 flex items-center justify-center rounded-full text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors z-10"
+                    rounded
+                    class="!p-0 w-12 h-12 flex items-center justify-center text-zinc-400 hover:bg-zinc-100 hover:text-zinc-900 transition-colors z-10"
                 >
-                    <svg
-                        class="w-6 h-6"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M15 19l-7-7 7-7"
-                        ></path>
-                    </svg>
+                    <i-lucide-arrow-left class="w-6 h-6" />
                 </Button>
                 <div v-else class="w-12"></div>
                 <div
@@ -614,31 +689,19 @@ const previousStep = () => {
                 <Button
                     @click="nextStep"
                     variant="text"
-                    :disabled="currentStep === 0 && !isPuzzleComplete"
-                    class="flex items-center gap-2 font-bold px-4 py-2 rounded-full transition-all z-10"
+                    rounded
+                    :disabled="currentStep === 1 && !isPuzzleComplete"
+                    class="flex items-center gap-2 text-emerald-600 font-bold hover:bg-emerald-50 hover:text-emerald-700 px-4 py-2 transition-all z-10"
                     :class="[
-                        currentStep === 0 && !isPuzzleComplete
+                        currentStep === 1 && !isPuzzleComplete
                             ? 'text-zinc-300 opacity-50 cursor-not-allowed'
-                            : 'text-emerald-600 hover:bg-emerald-50',
+                            : '',
                     ]"
                 >
                     <span>{{
                         currentStep === steps.length - 1 ? "Selesai" : "Lanjut"
                     }}</span>
-                    <svg
-                        v-if="currentStep !== steps.length - 1"
-                        class="w-4 h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M9 5l7 7-7 7"
-                        ></path>
-                    </svg>
+                    <i-lucide-arrow-right class="w-4 h-4" />
                 </Button>
             </div>
         </div>
@@ -646,10 +709,27 @@ const previousStep = () => {
 </template>
 
 <style scoped>
+.animate-float-slow {
+    animation: float 6s ease-in-out infinite;
+}
+.animate-float-medium {
+    animation: float 5s ease-in-out infinite reverse;
+}
+.animate-float-fast {
+    animation: float 4s ease-in-out infinite;
+}
+@keyframes float {
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+    50% {
+        transform: translateY(-10px) rotate(5deg);
+    }
+}
 .animate-strike {
     animation: strike 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
 }
-
 @keyframes strike {
     from {
         width: 0;

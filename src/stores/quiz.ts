@@ -1,5 +1,3 @@
-import { defineStore } from "pinia";
-import { ref, computed } from "vue";
 import type { Quiz, Question, Difficulty } from "@/types/models";
 
 export const useQuizStore = defineStore("quiz", () => {

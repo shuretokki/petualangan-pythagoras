@@ -3,7 +3,7 @@ import "./style.css";
 import { createPinia } from "pinia";
 import App from "./App.vue";
 import PrimeVue from "primevue/config";
-import Aura from "@primeuix/themes/aura";
+import Nora from "@primeuix/themes/nora";
 import router from "./router";
 import { VueFire, VueFireAuth } from "vuefire";
 import { app as firebaseApp } from "./firebase";
@@ -20,7 +20,7 @@ app.use(VueFire, {
 });
 app.use(PrimeVue, {
   theme: {
-    preset: Aura,
+    preset: Nora,
   },
 });
 app.use(MotionPlugin);

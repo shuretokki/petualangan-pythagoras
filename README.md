@@ -155,4 +155,3 @@ Contributions, issues, and feature requests are welcome!
 - The application uses Vue 3's Composition API throughout
 - TypeScript ensures type safety across the application
 - Animations are GPU-accelerated for smooth performance
-

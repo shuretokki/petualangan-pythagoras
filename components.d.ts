@@ -11,9 +11,31 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    Button: typeof import('primevue/button')['default']
+    ILucideAlertCircle: typeof import('~icons/lucide/alert-circle')['default']
+    ILucideArrowLeft: typeof import('~icons/lucide/arrow-left')['default']
+    ILucideArrowRight: typeof import('~icons/lucide/arrow-right')['default']
+    ILucideCheck: typeof import('~icons/lucide/check')['default']
+    ILucideFlame: typeof import('~icons/lucide/flame')['default']
+    ILucideImage: typeof import('~icons/lucide/image')['default']
+    ILucideLock: typeof import('~icons/lucide/lock')['default']
+    ILucideMail: typeof import('~icons/lucide/mail')['default']
+    ILucidePencil: typeof import('~icons/lucide/pencil')['default']
+    ILucidePlus: typeof import('~icons/lucide/plus')['default']
+    ILucideRefreshCcw: typeof import('~icons/lucide/refresh-ccw')['default']
+    ILucideRocket: typeof import('~icons/lucide/rocket')['default']
+    ILucideSprout: typeof import('~icons/lucide/sprout')['default']
+    ILucideTrash2: typeof import('~icons/lucide/trash2')['default']
+    ILucideX: typeof import('~icons/lucide/x')['default']
+    ILucideZap: typeof import('~icons/lucide/zap')['default']
+    InputText: typeof import('primevue/inputtext')['default']
     NavigationBar: typeof import('./src/components/NavigationBar.vue')['default']
+    Password: typeof import('primevue/password')['default']
     PytaSpeech: typeof import('./src/components/PytaSpeech.vue')['default']
+    RadioButton: typeof import('primevue/radiobutton')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Textarea: typeof import('primevue/textarea')['default']
+    Toolbar: typeof import('primevue/toolbar')['default']
   }
 }

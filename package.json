@@ -23,13 +23,18 @@
     "vuefire": "^3.2.2"
   },
   "devDependencies": {
+    "@iconify-json/lucide": "^1.2.74",
     "@primevue/auto-import-resolver": "^4.4.1",
     "@types/node": "^24.10.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "typescript": "~5.9.3",
+    "unplugin-auto-import": "^20.2.0",
+    "unplugin-icons": "^22.5.0",
     "unplugin-vue-components": "^30.0.0",
     "vite": "^7.2.2",
+    "vite-plugin-imagemin": "^0.6.1",
+    "vite-plugin-pwa": "^1.1.0",
     "vue-tsc": "^3.1.3"
   }
 }

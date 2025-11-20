@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import 'vue-easy-dnd/dist/dnd.css';
+@import "vue-easy-dnd/dist/dnd.css";
 
 @font-face {
     font-family: "Recoleta";
@@ -34,25 +34,10 @@ body {
     letter-spacing: -0.02em;
 }
 
-.hover\:scale-102:hover {
-    transform: scale(1.02);
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-
-.hover\:scale-105:hover {
-    transform: scale(1.05);
-}
-
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-.animate-fadeInUp {
-    animation: fadeInUp 0.8s ease-out forwards;
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
 }

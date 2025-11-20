@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { useRouter, useRoute } from "vue-router";
-import { computed } from "vue";
-import Button from "primevue/button";
-import Toolbar from "primevue/toolbar";
+import profileEm from "@/assets/image/profile_em.png";
+import profileVi from "@/assets/image/profile_vi.png";
 
 const router = useRouter();
 const route = useRoute();
@@ -18,6 +16,10 @@ const isActive = (routeName: string) => {
 const isVioletTheme = computed(() => {
     return ["contoh-soal", "kuis"].includes(route.name as string);
 });
+
+const logoSrc = computed(() => {
+    return isVioletTheme.value ? profileVi : profileEm;
+});
 </script>
 
 <template>
@@ -29,10 +31,20 @@ const isVioletTheme = computed(() => {
     >
         <template #start>
             <div class="flex items-center gap-3 my-3">
-                <span
-                    class="text-3xl transition-transform hover:scale-110 cursor-default"
-                    >🐍</span
+                <div
+                    class="w-10 h-10 rounded-full overflow-hidden border-2 transition-all duration-500"
+                    :class="
+                        isVioletTheme
+                            ? 'border-violet-200'
+                            : 'border-emerald-200'
+                    "
                 >
+                    <img
+                        :src="logoSrc"
+                        alt="Pyta"
+                        class="w-full h-full object-cover"
+                    />
+                </div>
                 <div>
                     <h1
                         class="font-recoleta text-xl font-bold leading-none transition-colors duration-500"

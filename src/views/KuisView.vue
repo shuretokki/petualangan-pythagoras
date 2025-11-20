@@ -1,13 +1,10 @@
 <script setup lang="ts">
-import { ref, computed, watch } from "vue";
-import { useRouter } from "vue-router";
 import { useQuizStore } from "@/stores/quiz";
 import { useDocument } from "vuefire";
 import { doc } from "firebase/firestore";
 import { db } from "@/firebase";
 import type { Quiz, Difficulty } from "@/types/models";
-import Button from "primevue/button";
-import PytaSpeech from "../components/PytaSpeech.vue";
+import mascotImg from "@/assets/image/mascot.png";
 
 const router = useRouter();
 const quizStore = useQuizStore();
@@ -72,7 +69,7 @@ const goHome = () => {
 
 <template>
     <div
-        class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden relative"
+        class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden relative font-sans text-slate-900"
     >
         <div class="fixed inset-0 pointer-events-none">
             <div
@@ -108,13 +105,12 @@ const goHome = () => {
                         Pilih Level
                     </h1>
                     <p class="text-slate-500 mb-12">Seberapa siap kamu?</p>
-
                     <div class="w-full space-y-4">
                         <button
                             v-for="lvl in levels"
                             :key="lvl.id"
                             @click="startLevel(lvl.id)"
-                            class="w-full p-6 rounded-3xl border-2 transition-all duration-200 flex items-center gap-4 group hover:-translate-y-1 hover:shadow-lg"
+                            class="w-full p-6 rounded-lg border-2 transition-all duration-200 flex items-center gap-4 group hover:-translate-y-1"
                             :class="lvl.color"
                         >
                             <div class="text-3xl">
@@ -235,63 +231,60 @@ const goHome = () => {
                             }"
                         />
                     </div>
-                    <div class="w-full space-y-4">
+
+                    <div
+                        class="w-full bg-white border border-zinc-200 rounded-lg overflow-hidden"
+                    >
                         <div
                             v-if="currentQuestion?.imageUrl"
-                            class="w-full rounded-2xl overflow-hidden shadow-sm border border-violet-100 bg-white"
+                            class="bg-slate-50/50 border-b border-slate-100 p-4 flex justify-center min-h-[180px]"
                         >
                             <img
                                 :src="currentQuestion.imageUrl"
-                                class="w-full h-auto object-cover max-h-[200px]"
+                                class="w-full h-full object-contain max-h-[200px] mx-auto"
                                 alt="Soal Image"
                             />
                         </div>
-                        <div
-                            class="w-full bg-white/60 border-l-4 border-violet-400 pl-5 pr-4 py-4 rounded-r-2xl backdrop-blur-sm"
-                        >
+
+                        <div class="p-6 pb-4">
                             <h2
-                                class="font-recoleta text-xl text-slate-800 leading-relaxed"
+                                class="font-recoleta text-xl text-slate-800 leading-relaxed font-bold"
                             >
                                 {{ currentQuestion?.text }}
                             </h2>
                         </div>
-                        <div class="space-y-3">
+
+                        <div class="p-6 pt-0 space-y-3">
                             <button
                                 v-for="(
                                     option, index
                                 ) in currentQuestion?.options"
                                 :key="index"
                                 @click="selectAnswer(option.text)"
-                                class="w-full text-left px-5 py-4 rounded-2xl border transition-all duration-200 relative overflow-hidden"
+                                class="w-full text-left px-4 py-3.5 rounded-lg border transition-all duration-200 relative flex items-center gap-4"
                                 :class="
                                     selectedAnswer === option.text
-                                        ? 'bg-violet-50 border-violet-400'
-                                        : 'bg-white/80 border-white hover:border-violet-200'
+                                        ? 'bg-violet-50 border-violet-500'
+                                        : 'bg-white border-zinc-200 hover:border-violet-200'
                                 "
                             >
                                 <div
-                                    class="flex items-center gap-4 relative z-10"
+                                    class="w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0"
+                                    :class="
+                                        selectedAnswer === option.text
+                                            ? 'border-violet-500 bg-violet-500'
+                                            : 'border-slate-300'
+                                    "
                                 >
                                     <div
-                                        class="w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors duration-200"
-                                        :class="
-                                            selectedAnswer === option.text
-                                                ? 'border-violet-500 bg-violet-500'
-                                                : 'border-slate-300'
-                                        "
-                                    >
-                                        <div
-                                            v-if="
-                                                selectedAnswer === option.text
-                                            "
-                                            class="w-2 h-2 bg-white rounded-full"
-                                        ></div>
-                                    </div>
-                                    <span
-                                        class="text-base font-medium text-slate-700"
-                                        >{{ option.text }}</span
-                                    >
+                                        v-if="selectedAnswer === option.text"
+                                        class="w-1.5 h-1.5 bg-white rounded-full"
+                                    ></div>
                                 </div>
+                                <span
+                                    class="text-sm font-medium text-slate-700 leading-snug"
+                                    >{{ option.text }}</span
+                                >
                             </button>
                         </div>
                     </div>
@@ -301,92 +294,54 @@ const goHome = () => {
                     v-else
                     class="w-full flex flex-col items-center text-center pt-8"
                 >
-                    <div class="mb-4 text-violet-600 animate-bounce">
-                        <svg
-                            v-if="quizStore.score >= 80"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="80"
-                            height="80"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
-                            <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
-                            <path d="M4 22h16" />
-                            <path
-                                d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+                    <div
+                        class="mb-6"
+                        v-motion
+                        :initial="{ scale: 0 }"
+                        :enter="{ scale: 1, transition: { type: 'spring' } }"
+                    >
+                        <div class="relative inline-block">
+                            <img
+                                :src="mascotImg"
+                                class="w-32 h-32 object-contain drop-shadow-xl"
                             />
-                            <path
-                                d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
-                            />
-                            <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
-                        </svg>
-                        <svg
-                            v-else-if="quizStore.score >= 60"
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="80"
-                            height="80"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <path d="M7 10v12" />
-                            <path
-                                d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2h0a3.13 3.13 0 0 1 3 3.88Z"
-                            />
-                        </svg>
-                        <svg
-                            v-else
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="80"
-                            height="80"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                        >
-                            <circle cx="12" cy="12" r="10" />
-                            <circle cx="12" cy="12" r="6" />
-                            <circle cx="12" cy="12" r="2" />
-                        </svg>
-                    </div>
-                    <h1 class="font-recoleta text-4xl text-slate-800 mb-2">
-                        Selesai!
-                    </h1>
-                    <div class="mt-8 mb-8">
-                        <div
-                            class="inline-block px-10 py-6 bg-white border-4 border-violet-100 rounded-[2rem]"
-                        >
-                            <span
-                                class="text-violet-300 text-xs font-bold uppercase tracking-widest mb-2 block"
-                                >Skor Kamu</span
-                            >
                             <div
-                                class="font-recoleta text-6xl text-violet-600 font-bold tracking-tight"
+                                class="absolute -bottom-2 -right-2 bg-violet-600 text-white font-recoleta font-bold text-xl px-4 py-1 rounded-full border-2 border-white shadow-md rotate-3"
                             >
                                 {{ quizStore.score }}%
                             </div>
                         </div>
                     </div>
+
+                    <h1 class="font-recoleta text-4xl text-slate-800 mb-2">
+                        {{
+                            quizStore.score >= 80
+                                ? "Luar Biasa!"
+                                : quizStore.score >= 60
+                                  ? "Kerja Bagus!"
+                                  : "Coba Lagi Yuk!"
+                        }}
+                    </h1>
+
+                    <p class="text-slate-500 mb-10 px-8 leading-relaxed">
+                        {{
+                            quizStore.score >= 80
+                                ? "Kamu sudah sangat menguasai materi ini."
+                                : "Jangan menyerah, pelajari materi lagi dan coba lagi!"
+                        }}
+                    </p>
+
                     <div class="flex flex-col w-full gap-3 px-6">
                         <Button
                             @click="restartQuiz"
                             label="Main Lagi / Ganti Level"
-                            class="!w-full !rounded-full !bg-violet-600 !border-violet-600 !font-bold !py-3 !text-white"
-                        /><Button
+                            class="!w-full !rounded-lg !bg-violet-600 !border-violet-600 !font-bold !py-3 !text-white"
+                        />
+                        <Button
                             @click="goHome"
                             label="Home"
                             variant="outlined"
-                            class="!w-full !rounded-full !text-violet-600 !border-violet-200 !font-bold !py-3"
+                            class="!w-full !rounded-lg !text-violet-600 !border-violet-200 !font-bold !py-3"
                         />
                     </div>
                 </div>
@@ -394,7 +349,7 @@ const goHome = () => {
 
             <div
                 v-if="!isSelectingLevel && !quizStore.quizCompleted"
-                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-full z-50"
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-lg z-50"
             >
                 <div
                     class="relative flex items-center justify-between px-2 h-16"
@@ -402,27 +357,16 @@ const goHome = () => {
                     <Button
                         @click="handlePrevious"
                         variant="text"
+                        rounded
                         :disabled="quizStore.currentQuestionIndex === 0"
-                        class="!p-0 w-12 h-12 flex items-center justify-center rounded-full transition-colors z-10"
+                        class="!p-0 w-12 h-12 flex items-center justify-center text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors z-10"
                         :class="
                             quizStore.currentQuestionIndex === 0
                                 ? '!text-slate-200'
                                 : '!text-slate-400 hover:!bg-violet-50'
                         "
                     >
-                        <svg
-                            class="w-6 h-6"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M15 19l-7-7 7-7"
-                            ></path>
-                        </svg>
+                        <i-lucide-arrow-left class="w-6 h-6" />
                     </Button>
                     <div
                         class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none w-24"
@@ -446,8 +390,9 @@ const goHome = () => {
                     <Button
                         @click="handleNext"
                         variant="text"
+                        rounded
                         :disabled="!selectedAnswer"
-                        class="flex items-center gap-2 font-bold px-4 py-2 rounded-full transition-colors z-10"
+                        class="flex items-center gap-2 font-bold px-4 py-2 transition-colors z-10"
                         :class="
                             !selectedAnswer
                                 ? '!text-slate-300'
@@ -460,19 +405,7 @@ const goHome = () => {
                                 ? "Selesai"
                                 : "Lanjut"
                         }}</span>
-                        <svg
-                            class="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                        >
-                            <path
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                stroke-width="2"
-                                d="M9 5l7 7-7 7"
-                            ></path>
-                        </svg>
+                        <i-lucide-arrow-right class="w-4 h-4" />
                     </Button>
                 </div>
             </div>

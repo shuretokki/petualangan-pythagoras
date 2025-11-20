@@ -1,9 +1,4 @@
-<script setup lang="ts">
-import Button from "primevue/button";
-import InputText from "primevue/inputtext";
-import PytaSpeech from "@/components/PytaSpeech.vue";
-</script>
-
+<script setup lang="ts"></script>
 <template>
     <div class="min-h-screen bg-[#FAFAFA] p-8 md:p-20">
         <div class="max-w-2xl mx-auto space-y-16">
