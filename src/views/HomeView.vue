@@ -50,9 +50,9 @@ const previousPage = () => {
 
 <template>
     <div
-        class="flex flex-col items-center justify-center w-full bg-[#FAFAFA] overflow-hidden"
+        class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FAFAFA] overflow-hidden relative"
     >
-        <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="fixed inset-0 pointer-events-none">
             <div
                 class="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-emerald-200/20 blur-3xl animate-pulse"
             ></div>
@@ -62,9 +62,9 @@ const previousPage = () => {
             ></div>
         </div>
 
-        <div class="min-h-[100dvh] w-full max-w-sm flex flex-col relative z-10">
+        <div class="relative z-10 w-full max-w-sm flex flex-col min-h-screen">
             <div
-                class="flex-1 flex flex-col justify-center items-center mb-28 mt-4 px-6"
+                class="flex-1 flex flex-col justify-center items-center pb-32 pt-8 px-6"
             >
                 <div
                     v-if="currentPage === 0"

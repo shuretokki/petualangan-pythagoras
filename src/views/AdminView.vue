@@ -33,7 +33,11 @@ const correctOptionIndex = ref<number | null>(null);
 
 // Watchers
 watch(correctOptionIndex, (newIndex) => {
-    if (newIndex !== null && newQuestion.value.options[newIndex]) {
+    if (
+        newIndex !== null &&
+        newQuestion.value.options &&
+        newQuestion.value.options[newIndex]
+    ) {
         newQuestion.value.correctAnswer =
             newQuestion.value.options[newIndex].text;
     }
@@ -44,10 +48,11 @@ watch(
     (newOptions) => {
         if (
             correctOptionIndex.value !== null &&
+            newOptions &&
             newOptions[correctOptionIndex.value]
         ) {
             newQuestion.value.correctAnswer =
-                newOptions[correctOptionIndex.value].text;
+                newOptions[correctOptionIndex.value]!.text;
         }
     },
     { deep: true },
@@ -126,15 +131,12 @@ const openCreateForm = () => {
 
 const editQuestion = (q: Question) => {
     newQuestion.value = JSON.parse(JSON.stringify(q));
-    // Find index of correct answer
     const idx = newQuestion.value.options.findIndex(
         (o) => o.text === q.correctAnswer,
     );
     correctOptionIndex.value = idx !== -1 ? idx : null;
     isEditing.value = true;
     isAdding.value = true;
-
-    // Scroll to form
     window.scrollTo({ top: 200, behavior: "smooth" });
 };
 
@@ -146,8 +148,17 @@ const saveQuestion = async () => {
         return;
     }
 
-    newQuestion.value.correctAnswer =
-        newQuestion.value.options[correctOptionIndex.value].text;
+    // Strict null check fix
+    if (
+        newQuestion.value.options &&
+        newQuestion.value.options[correctOptionIndex.value]
+    ) {
+        newQuestion.value.correctAnswer =
+            newQuestion.value.options[correctOptionIndex.value]!.text;
+    } else {
+        alert("Pilihan jawaban tidak valid.");
+        return;
+    }
 
     if (!newQuestion.value.correctAnswer) {
         alert("Teks jawaban benar tidak boleh kosong.");
@@ -156,9 +167,7 @@ const saveQuestion = async () => {
 
     newQuestion.value.difficulty = activeTab.value;
 
-    // Update Local State
     if (isEditing.value && newQuestion.value.id) {
-        // Replace existing
         const index = activeQuiz.value.questions.findIndex(
             (q) => q.id === newQuestion.value.id,
         );
@@ -166,7 +175,6 @@ const saveQuestion = async () => {
             activeQuiz.value.questions[index] = { ...newQuestion.value };
         }
     } else {
-        // Add New
         newQuestion.value.id = Date.now().toString();
         if (!activeQuiz.value.questions) activeQuiz.value.questions = [];
         activeQuiz.value.questions.push({ ...newQuestion.value });
@@ -177,7 +185,6 @@ const saveQuestion = async () => {
             questions: activeQuiz.value.questions,
         });
 
-        // Reset
         newQuestion.value = JSON.parse(JSON.stringify(defaultQuestion));
         correctOptionIndex.value = null;
         isAdding.value = false;

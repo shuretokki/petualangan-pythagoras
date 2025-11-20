@@ -10,6 +10,11 @@ const router = createRouter({
       component: () => import("@/views/HomeView.vue"),
     },
     {
+      path: "/login",
+      name: "login",
+      component: () => import("@/views/LoginView.vue"),
+    },
+    {
       path: "/materi",
       name: "materi",
       component: () => import("@/views/MateriView.vue"),
@@ -28,7 +33,7 @@ const router = createRouter({
       path: "/admin",
       name: "admin",
       component: () => import("@/views/AdminView.vue"),
-      meta: { requiresAuth: false },
+      meta: { requiresAuth: true },
     },
     {
       path: "/test",
@@ -41,11 +46,19 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
 
+  // 1. If route requires auth and user is NOT logged in -> Redirect to Login
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-    next("/");
-  } else {
-    next();
+    next({ name: "login" });
+    return;
   }
+
+  // 2. If user IS logged in and tries to visit Login -> Redirect to Admin
+  if (to.name === "login" && authStore.isAuthenticated) {
+    next({ name: "admin" });
+    return;
+  }
+
+  next();
 });
 
 export default router;

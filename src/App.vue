@@ -8,7 +8,7 @@ const showNavigation = computed(() => route.name !== "admin");
 </script>
 
 <template>
-    <div class="min-h-100dvh min-w-screen overflow-hidden">
+    <div class="min-h-screen min-w-screen overflow-hidden">
         <NavigationBar v-if="showNavigation" />
 
         <main v-if="showNavigation">

@@ -11,15 +11,12 @@ import PytaSpeech from "../components/PytaSpeech.vue";
 
 const router = useRouter();
 const quizStore = useQuizStore();
-
 const quizDoc = useDocument<Quiz>(doc(db, "quizzes", "quiz-pythagoras-1"));
 
 watch(
     quizDoc,
     (newDoc) => {
-        if (newDoc) {
-            quizStore.loadQuizBank(newDoc);
-        }
+        if (newDoc) quizStore.loadQuizBank(newDoc);
     },
     { immediate: true },
 );
@@ -60,11 +57,9 @@ const startLevel = (level: Difficulty) => {
 };
 
 const selectAnswer = (answer: string) => {
-    if (currentQuestion.value) {
+    if (currentQuestion.value)
         quizStore.selectAnswer(currentQuestion.value.id, answer);
-    }
 };
-
 const handleNext = () => quizStore.nextQuestion();
 const handlePrevious = () => quizStore.previousQuestion();
 const restartQuiz = () => {
@@ -77,9 +72,9 @@ const goHome = () => {
 
 <template>
     <div
-        class="flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden"
+        class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden relative"
     >
-        <div class="fixed inset-0 overflow-hidden pointer-events-none">
+        <div class="fixed inset-0 pointer-events-none">
             <div
                 class="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-violet-200/30 blur-3xl"
             ></div>
@@ -91,7 +86,7 @@ const goHome = () => {
             ></div>
         </div>
 
-        <div class="min-h-[100dvh] w-full max-w-sm flex flex-col relative z-10">
+        <div class="relative z-10 w-full max-w-sm flex flex-col min-h-screen">
             <div class="flex-1 flex flex-col items-center pb-32 pt-8 px-6">
                 <div
                     v-if="!quizStore.quizBank"
@@ -186,7 +181,6 @@ const goHome = () => {
                                     />
                                 </svg>
                             </div>
-
                             <div class="text-left">
                                 <h3 class="font-recoleta text-xl font-bold">
                                     {{ lvl.label }}
@@ -226,7 +220,21 @@ const goHome = () => {
                             Kuis Pythagoras
                         </h1>
                     </div>
-
+                    <div
+                        class="flex justify-center mb-8 w-full min-h-[80px] items-center"
+                    >
+                        <PytaSpeech
+                            text="Pilih jawaban yang menurutmu benar, lalu tekan lanjut!"
+                            variant="violet"
+                            v-motion
+                            :initial="{ opacity: 0, scale: 0.9 }"
+                            :enter="{
+                                opacity: 1,
+                                scale: 1,
+                                transition: { duration: 300 },
+                            }"
+                        />
+                    </div>
                     <div class="w-full space-y-4">
                         <div
                             v-if="currentQuestion?.imageUrl"
@@ -238,7 +246,6 @@ const goHome = () => {
                                 alt="Soal Image"
                             />
                         </div>
-
                         <div
                             class="w-full bg-white/60 border-l-4 border-violet-400 pl-5 pr-4 py-4 rounded-r-2xl backdrop-blur-sm"
                         >
@@ -248,7 +255,6 @@ const goHome = () => {
                                 {{ currentQuestion?.text }}
                             </h2>
                         </div>
-
                         <div class="space-y-3">
                             <button
                                 v-for="(
@@ -353,11 +359,9 @@ const goHome = () => {
                             <circle cx="12" cy="12" r="2" />
                         </svg>
                     </div>
-
                     <h1 class="font-recoleta text-4xl text-slate-800 mb-2">
                         Selesai!
                     </h1>
-
                     <div class="mt-8 mb-8">
                         <div
                             class="inline-block px-10 py-6 bg-white border-4 border-violet-100 rounded-[2rem]"
@@ -373,14 +377,12 @@ const goHome = () => {
                             </div>
                         </div>
                     </div>
-
                     <div class="flex flex-col w-full gap-3 px-6">
                         <Button
                             @click="restartQuiz"
                             label="Main Lagi / Ganti Level"
                             class="!w-full !rounded-full !bg-violet-600 !border-violet-600 !font-bold !py-3 !text-white"
-                        />
-                        <Button
+                        /><Button
                             @click="goHome"
                             label="Home"
                             variant="outlined"
@@ -392,7 +394,7 @@ const goHome = () => {
 
             <div
                 v-if="!isSelectingLevel && !quizStore.quizCompleted"
-                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-full z-[90]"
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-full z-50"
             >
                 <div
                     class="relative flex items-center justify-between px-2 h-16"
@@ -422,16 +424,14 @@ const goHome = () => {
                             ></path>
                         </svg>
                     </Button>
-
                     <div
                         class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 pointer-events-none w-24"
                     >
                         <span
                             class="text-[10px] font-bold text-violet-400 tracking-widest uppercase"
+                            >{{ quizStore.currentQuestionIndex + 1 }} /
+                            {{ quizStore.totalQuestions }}</span
                         >
-                            {{ quizStore.currentQuestionIndex + 1 }} /
-                            {{ quizStore.totalQuestions }}
-                        </span>
                         <div
                             class="w-full h-1 bg-slate-100 rounded-full overflow-hidden"
                         >
@@ -443,7 +443,6 @@ const goHome = () => {
                             ></div>
                         </div>
                     </div>
-
                     <Button
                         @click="handleNext"
                         variant="text"
