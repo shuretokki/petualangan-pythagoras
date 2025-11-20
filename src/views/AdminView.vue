@@ -40,7 +40,7 @@ watch(
             newOptions[correctOptionIndex.value]
         ) {
             newQuestion.value.correctAnswer =
-                newOptions[correctOptionIndex.value].text;
+                newOptions[correctOptionIndex.value]!.text;
         }
     },
     { deep: true },
@@ -168,7 +168,7 @@ const saveQuestion = async () => {
         newQuestion.value.options[correctOptionIndex.value]
     ) {
         newQuestion.value.correctAnswer =
-            newQuestion.value.options[correctOptionIndex.value].text;
+            newQuestion.value.options[correctOptionIndex.value]!.text;
     }
 
     newQuestion.value.difficulty = activeTab.value;

@@ -83,7 +83,7 @@ const previousPage = () => {
                 class="flex-1 flex flex-col justify-center items-center pb-32 pt-8 px-6"
             >
                 <div
-                    v-if="currentPageData.type === 'intro'"
+                    v-if="currentPageData!.type === 'intro'"
                     class="text-center space-y-6 w-full"
                 >
                     <div
@@ -141,7 +141,7 @@ const previousPage = () => {
                 </div>
 
                 <div
-                    v-if="currentPageData.type === 'objectives'"
+                    v-if="currentPageData!.type === 'objectives'"
                     class="w-full"
                 >
                     <div class="text-center space-y-2 mb-8">
@@ -165,7 +165,7 @@ const previousPage = () => {
                         }"
                     >
                         <div
-                            v-for="(obj, i) in currentPageData.objectives"
+                            v-for="(obj, i) in currentPageData!.objectives"
                             :key="i"
                             class="bg-white border border-emerald-100 rounded-lg p-4 flex gap-4 items-start"
                         >
@@ -189,7 +189,7 @@ const previousPage = () => {
                 </div>
 
                 <div
-                    v-if="currentPageData.type === 'components'"
+                    v-if="currentPageData!.type === 'components'"
                     class="w-full"
                 >
                     <div class="text-center space-y-2 mb-8">
@@ -320,7 +320,7 @@ const previousPage = () => {
                 </div>
 
                 <div
-                    v-if="currentPageData.type === 'cta'"
+                    v-if="currentPageData!.type === 'cta'"
                     class="text-center space-y-8 w-full"
                 >
                     <div
