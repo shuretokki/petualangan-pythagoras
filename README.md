@@ -1,157 +1,49 @@
-# 🐍 Petualangan Teorema Pythagoras
+<div align="center">
+  <img src="src/assets/image/mascot.png" alt="Pythagoras Mascot" width="120" />
+  <h1>Petualangan Pythagoras</h1>
+  <p>
+    <b>An interactive, animated journey to master the Pythagorean Theorem.</b>
+  </p>
+</div>
 
-An interactive, animated, and gamified educational web application for teaching the Pythagorean theorem to elementary and middle school students.
+---
 
-## ✨ Features
+### Getting Started
 
-### User-Facing Application
-- **🏠 Home/Introduction**: Welcome page with Pyta the mascot introducing the Pythagorean theorem
-- **📚 Materi (Learning Material)**: Interactive visual proof with draggable puzzle pieces
-- **📝 Contoh Soal (Example Problems)**: Step-by-step animated solutions to example problems
-- **🎯 Kuis (Quiz)**: Interactive quiz with immediate feedback and scoring
-- **🎨 Beautiful Animations**: Smooth transitions using @vueuse/motion
+1.  **Clone the repository**:
+    ```bash
+    git clone https://github.com/shuretokki/petualangan-pythagoras.git
+    ```
 
-### Admin Panel
-- **🔐 Secure Authentication**: Firebase Authentication for admin access
-- **📊 Quiz Management**: Full CRUD operations for quizzes and questions
-- **💎 PrimeVue Components**: Professional data tables and forms
+2.  **Install dependencies**:
+    ```bash
+    npm install
+    ```
 
-## 🛠️ Tech Stack
+3.  **Configure Environment**:
+    Create a `.env` file and add your Firebase credentials:
+    ```bash
+    VITE_FIREBASE_API_KEY=""
+    VITE_FIREBASE_AUTH_DOMAIN=""
+    VITE_FIREBASE_PROJECT_ID=""
+    VITE_FIREBASE_STORAGE_BUCKET=""
+    VITE_FIREBASE_MESSAGING_SENDER_ID=""
+    VITE_FIREBASE_APP_ID=""
+    VITE_FIREBASE_MEASUREMENT_ID=""
+    ```
 
-- **Frontend Framework**: Vue.js 3 (Composition API)
-- **Language**: TypeScript
-- **Build Tool**: Vite
-- **Styling**: TailwindCSS v4
-- **UI Components**: PrimeVue (Admin Panel only)
-- **Animations**: @vueuse/motion
-- **State Management**: Pinia
-- **Backend & Database**: Firebase (Firestore & Auth)
-- **Data Fetching**: VueFire
-- **Routing**: Vue Router
+4.  **Run locally**:
+    ```bash
+    npm run dev
+    ```
 
-## 🚀 Getting Started
+### Contributing
 
-### Prerequisites
-- Node.js 18+ installed
-- Firebase project set up (optional for development)
+* This project is currently designed for a specific client use case.
+* However, if you find bugs or have suggestions for the educational content, feel free to [open an issue](https://github.com/yourusername/petualangan-pythagoras/issues/new).
 
-### Installation
+### Credits
 
-1. Clone the repository
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create a `.env` file with your Firebase configuration:
-```env
-VITE_FIREBASE_API_KEY=your_api_key
-```
-
-4. Run the development server:
-```bash
-npm run dev
-```
-
-5. Build for production:
-```bash
-npm run build
-```
-
-## 📁 Project Structure
-
-```
-src/
-├── assets/           # Static assets
-├── components/       # Reusable Vue components
-│   ├── NavigationBar.vue
-│   └── PytaSpeech.vue
-├── router/          # Vue Router configuration
-│   └── index.ts
-├── stores/          # Pinia stores
-│   ├── auth.ts      # Authentication state
-│   └── quiz.ts      # Quiz state management
-├── types/           # TypeScript type definitions
-│   └── models.ts
-├── views/           # Page components
-│   ├── HomeView.vue
-│   ├── MateriView.vue
-│   ├── ContohSoalView.vue
-│   ├── KuisView.vue
-│   └── AdminView.vue
-├── App.vue          # Root component
-├── firebase.ts      # Firebase configuration
-├── main.ts          # Application entry point
-└── style.css        # Global styles
-```
-
-## 🎮 Usage
-
-### For Students
-1. Start at the **Home** page to meet Pyta and learn about right triangles
-2. Explore **Materi** to discover the Pythagorean theorem through interactive puzzles
-3. Study **Contoh Soal** to see worked examples
-4. Test your knowledge with the **Kuis** section
-
-### For Administrators
-1. Navigate to `/admin`
-2. Login with your admin credentials
-3. Manage quiz questions and answers
-4. Add, edit, or delete quizzes
-
-## 🔥 Firebase Setup (Optional)
-
-The application includes sample data for development. To use Firebase:
-
-1. Create a Firebase project at [firebase.google.com](https://firebase.google.com)
-2. Enable Firestore Database
-3. Enable Authentication (Email/Password provider)
-4. Create a web app and copy the configuration
-5. Update `src/firebase.ts` with your configuration
-6. Create the following Firestore collections:
-   - `modules` - Learning modules
-   - `quizzes` - Quiz data with embedded questions
-
-### Sample Firestore Document Structure
-
-**Collection: `quizzes`**
-```json
-{
-  "id": "quiz-pythagoras-1",
-  "moduleId": "pythagoras-v1",
-  "title": "Kuis Pythagoras Dasar",
-  "questions": [
-    {
-      "id": "q1",
-      "text": "Question text here",
-      "type": "multiple-choice",
-      "options": [
-        { "text": "Option 1", "isCorrect": true },
-        { "text": "Option 2", "isCorrect": false }
-      ]
-    }
-  ]
-}
-```
-
-## 🎨 Customization
-
-- **Colors**: Edit TailwindCSS configuration
-- **Animations**: Modify @vueuse/motion parameters in components
-- **Content**: Update the static content in view components or manage via Admin Panel
-
-## 📝 License
-
-This project is created for educational purposes.
-
-## 🤝 Contributing
-
-Contributions, issues, and feature requests are welcome!
-
-## 👨‍💻 Developer Notes
-
-- All routes are protected by authentication guards
-- Quiz data is reactive and updates in real-time with Firestore
-- The application uses Vue 3's Composition API throughout
-- TypeScript ensures type safety across the application
-- Animations are GPU-accelerated for smooth performance
+* **Development**: Built by shuretokki
+* **Assets**: Illustrations and icons provided by [Lucide](https://lucide.dev/) and custom assets.
+* **License**: This project is created for educational purposes.
