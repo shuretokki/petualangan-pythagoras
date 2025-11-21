@@ -1,34 +1,40 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
-import Button from "primevue/button";
-import PytaSpeech from "../components/PytaSpeech.vue";
+interface Step {
+    label: string;
+    formula: string;
+}
+
+interface Problem {
+    title: string;
+    story: string;
+    question: string;
+    labels: { a: string; b: string; c: string };
+    steps: Step[];
+    answer: string;
+    icon?: string;
+}
 
 const router = useRouter();
-const showIntro = ref(true);
-const currentExample = ref(0);
-const currentStepIndex = ref(-1);
+const ui = reactive({ intro: true, idx: 0, step: -1 });
 
-const examples = [
+const problems: Problem[] = [
     {
-        title: "Kasus Segitiga",
-        problem:
-            "Ada segitiga siku-siku dengan alas <strong>8 cm</strong> dan tinggi <strong>6 cm</strong>.",
-        question: "Berapa panjang sisi miring <strong>(m)</strong>?",
+        title: "Segitiga 1",
+        story: "Sebuah segitiga siku-siku memiliki alas <strong>a = 8 cm</strong> dan tinggi <strong>b = 6 cm</strong>.",
+        question: "Berapa panjang sisi miring <strong>(c)</strong>?",
         labels: { a: "8 cm", b: "6 cm", c: "?" },
         steps: [
-            { label: "Identifikasi", formula: "Alas (a)=8, Tinggi (b)=6" },
-            { label: "Rumus", formula: "a² + b² = m²" },
-            { label: "Substitusi", formula: "8² + 6² = m²" },
-            { label: "Hitung", formula: "64 + 36 = 100" },
-            { label: "Akar", formula: "m = √100 = 10 cm" },
+            { label: "Rumus", formula: "a² + b² = c²" },
+            { label: "Substitusi", formula: "8² + 6² = c²" },
+            { label: "Kuadrat", formula: "64 + 36 = c²" },
+            { label: "Jumlah", formula: "100 = c²" },
+            { label: "Akar", formula: "c = √100" },
         ],
         answer: "10 cm",
     },
     {
         title: "Bantu Tuan Tupai",
-        problem:
-            "Tuan Tupai ingin menyeberang sungai! Tinggi tebing <strong>4 m</strong> dan lebar sungai <strong>3 m</strong>.",
+        story: "Tuan Tupai ingin menyeberang sungai! Tinggi tebing <strong>4 m</strong> dan lebar sungai <strong>3 m</strong>.",
         question: "Berapa panjang papan kayu yang dibutuhkan?",
         labels: { a: "3 m", b: "4 m", c: "?" },
         steps: [
@@ -39,11 +45,11 @@ const examples = [
             { label: "Akar", formula: "c = √25 = 5 m" },
         ],
         answer: "5 meter",
+        icon: "",
     },
     {
         title: "Perahu Menyeberang",
-        problem:
-            "Sebuah perahu menyeberang sungai arus deras. Jarak lurus <strong>80 m</strong>, terseret arus sejauh <strong>60 m</strong>.",
+        story: "Sebuah perahu menyeberang sungai arus deras. Jarak lurus <strong>80 m</strong>, terseret arus sejauh <strong>60 m</strong>.",
         question: "Berapa jarak tempuh perahu sebenarnya?",
         labels: { a: "60 m", b: "80 m", c: "?" },
         steps: [
@@ -54,106 +60,80 @@ const examples = [
             { label: "Akar", formula: "c = √10.000 = 100 m" },
         ],
         answer: "100 meter",
+        icon: "",
     },
 ];
 
-const currentExampleData = computed(() => examples[currentExample.value]);
-const isExampleFinished = computed(
-    () =>
-        currentExampleData.value &&
-        currentStepIndex.value >= currentExampleData.value.steps.length - 1,
+const curr = computed<Problem | undefined>(() => problems[ui.idx]);
+const isDone = computed(
+    () => curr.value && ui.step >= curr.value.steps.length - 1,
 );
 
-const handleNext = () => {
-    if (!isExampleFinished.value) {
-        currentStepIndex.value++;
-        return;
+const next = () => {
+    if (!curr.value) return;
+    if (!isDone.value) {
+        ui.step++;
+    } else if (ui.idx < problems.length - 1) {
+        ui.idx++;
+        ui.step = -1;
+    } else {
+        router.push({ name: "kuis" });
     }
-    currentExample.value < examples.length - 1
-        ? (currentExample.value++, (currentStepIndex.value = -1))
-        : router.push({ name: "kuis" });
 };
 
-const handleBack = () => {
-    if (currentStepIndex.value > -1) currentStepIndex.value--;
-    else if (currentExample.value > 0) {
-        currentExample.value--;
-        const ex = examples[currentExample.value];
-        if (ex) currentStepIndex.value = ex.steps.length - 1;
-    } else router.push({ name: "materi" });
+const back = () => {
+    if (ui.step > -1) {
+        ui.step--;
+    } else if (ui.idx > 0) {
+        ui.idx--;
+        ui.step = (problems[ui.idx]?.steps.length ?? 0) - 1;
+    } else {
+        router.push({ name: "materi" });
+    }
 };
 </script>
 
 <template>
     <SectionIntro
-        v-if="showIntro"
+        v-if="ui.intro"
         title="Latihan Soal"
         description="Mari kita lihat bagaimana rumus Pythagoras digunakan untuk menyelesaikan masalah sehari-hari!"
         buttonText="Mulai Latihan"
         variant="violet"
-        @start="showIntro = false"
+        @start="ui.intro = false"
     />
+
     <div
+        v-else
         class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden relative font-sans text-slate-900"
     >
         <div class="fixed inset-0 pointer-events-none">
             <div
                 class="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-violet-200/30 blur-3xl animate-pulse"
-            ></div>
-            <div
-                class="absolute top-[40%] -right-[10%] w-[60%] h-[60%] rounded-full bg-fuchsia-200/20 blur-3xl animate-pulse"
-                style="animation-delay: 1s"
-            ></div>
-            <div
-                class="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-indigo-200/20 blur-3xl animate-pulse"
-                style="animation-delay: 2s"
-            ></div>
-        </div>
-
-        <div
-            v-if="showIntro"
-            class="relative z-20 w-full max-w-sm flex flex-col min-h-screen items-center justify-center p-6"
-            v-motion
-            :initial="{ opacity: 0, scale: 0.9 }"
-            :enter="{ opacity: 1, scale: 1 }"
-        >
-            <div
-                class="w-20 h-20 bg-violet-100 text-violet-600 rounded-full flex items-center justify-center mb-6 animate-bounce"
-            >
-                <i-lucide-lightbulb class="w-10 h-10" />
-            </div>
-            <h1
-                class="font-recoleta text-4xl font-bold text-zinc-800 mb-3 text-center"
-            >
-                Contoh Soal
-            </h1>
-            <p class="text-zinc-500 text-center mb-8 leading-relaxed">
-                Mari kita lihat bagaimana rumus Pythagoras digunakan dalam
-                masalah sehari-hari.
-            </p>
-            <PytaSpeech
-                text="Jangan khawatir, aku akan membantumu di setiap langkah!"
-                variant="violet"
-                class="mb-8"
             />
-            <Button
-                @click="showIntro = false"
-                label="Mulai Latihan"
-                rounded
-                class="!bg-violet-600 !border-violet-600 hover:!bg-violet-700 font-bold px-8 py-3 w-full sm:w-auto transition-all hover:scale-105"
+            <div
+                class="absolute top-[40%] -right-[10%] w-[60%] h-[60%] rounded-full bg-fuchsia-200/20 blur-3xl animate-pulse delay-1000"
+            />
+            <div
+                class="absolute bottom-[-10%] left-[20%] w-[50%] h-[50%] rounded-full bg-indigo-200/20 blur-3xl animate-pulse delay-2000"
             />
         </div>
 
-        <div
-            v-else
-            class="relative z-10 w-full max-w-sm flex flex-col min-h-screen"
-        >
+        <div class="relative z-10 w-full max-w-sm flex flex-col min-h-screen">
             <div class="flex-1 flex flex-col items-center pb-32 pt-8 px-6">
+                <div class="w-full flex justify-start mb-4">
+                    <Button
+                        @click="router.push({ name: 'home' })"
+                        variant="text"
+                        rounded
+                        class="p-2! px-3! flex items-center gap-2 text-zinc-900! hover:text-violet-600 hover:bg-violet-50 transition-colors text-sm font-bold"
+                    >
+                        <i-lucide-arrow-left class="w-4 h-4" /> Home
+                    </Button>
+                </div>
+
                 <div
                     class="text-[10px] font-bold text-violet-600 tracking-widest uppercase mb-3"
-                    v-motion
-                    :initial="{ opacity: 0, y: -10 }"
-                    :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }"
                 >
                     Contoh Soal
                 </div>
@@ -163,9 +143,9 @@ const handleBack = () => {
                     v-motion
                     :initial="{ opacity: 0, y: -20 }"
                     :enter="{ opacity: 1, y: 0, transition: { duration: 500 } }"
-                    :key="currentExample"
+                    :key="ui.idx"
                 >
-                    {{ currentExampleData?.title }}
+                    {{ curr?.title }}
                 </h1>
 
                 <div
@@ -182,21 +162,21 @@ const handleBack = () => {
                     v-motion
                     :initial="{ opacity: 0, y: 20 }"
                     :enter="{ opacity: 1, y: 0, transition: { duration: 400 } }"
-                    :key="'card-' + currentExample"
+                    :key="`card-${ui.idx}`"
                 >
                     <div
-                        class="bg-slate-50/50 border-b border-slate-100 p-6 flex justify-center relative overflow-hidden"
+                        class="bg-slate-50/50 border-b border-slate-100 p-6 flex justify-center"
                     >
                         <div
-                            class="relative w-48 h-40 flex items-center justify-center z-10"
+                            class="relative w-48 h-40 flex items-center justify-center"
                         >
                             <svg
                                 viewBox="0 0 200 180"
-                                class="w-full h-full overflow-visible drop-shadow-sm"
+                                class="w-full h-full overflow-visible"
                             >
                                 <defs>
                                     <linearGradient
-                                        id="violetGradient"
+                                        id="vGrad"
                                         x1="0%"
                                         y1="0%"
                                         x2="100%"
@@ -218,27 +198,9 @@ const handleBack = () => {
                                         />
                                     </linearGradient>
                                 </defs>
-
-                                <path
-                                    v-if="currentExample > 0"
-                                    d="M-20 140 Q 50 130 100 140 T 220 140"
-                                    fill="none"
-                                    stroke="#60a5fa"
-                                    stroke-width="4"
-                                    opacity="0.3"
-                                />
-                                <path
-                                    v-if="currentExample > 0"
-                                    d="M-20 150 Q 50 140 100 150 T 220 150"
-                                    fill="none"
-                                    stroke="#60a5fa"
-                                    stroke-width="4"
-                                    opacity="0.3"
-                                />
-
                                 <path
                                     d="M40 20 L40 140 L180 140 Z"
-                                    fill="url(#violetGradient)"
+                                    fill="url(#vGrad)"
                                     stroke="#8b5cf6"
                                     stroke-width="3"
                                     stroke-linejoin="round"
@@ -251,20 +213,20 @@ const handleBack = () => {
                                 />
 
                                 <text
-                                    v-if="currentExample === 1"
+                                    v-if="curr?.icon && ui.idx === 1"
                                     x="30"
                                     y="15"
                                     font-size="24"
                                 >
-                                    🐿️
+                                    {{ curr.icon }}
                                 </text>
                                 <text
-                                    v-if="currentExample === 2"
+                                    v-if="curr?.icon && ui.idx === 2"
                                     x="170"
                                     y="145"
                                     font-size="24"
                                 >
-                                    ⛵
+                                    {{ curr.icon }}
                                 </text>
 
                                 <text
@@ -273,7 +235,7 @@ const handleBack = () => {
                                     class="font-bold fill-violet-700 text-sm font-sans"
                                     text-anchor="middle"
                                 >
-                                    {{ currentExampleData?.labels.b }}
+                                    {{ curr?.labels.b }}
                                 </text>
                                 <text
                                     x="110"
@@ -281,7 +243,7 @@ const handleBack = () => {
                                     class="font-bold fill-violet-700 text-sm font-sans"
                                     text-anchor="middle"
                                 >
-                                    {{ currentExampleData?.labels.a }}
+                                    {{ curr?.labels.a }}
                                 </text>
                                 <text
                                     x="125"
@@ -289,7 +251,7 @@ const handleBack = () => {
                                     class="font-bold fill-rose-500 text-sm font-sans"
                                     text-anchor="middle"
                                 >
-                                    {{ currentExampleData?.labels.c }}
+                                    {{ curr?.labels.c }}
                                 </text>
                             </svg>
                         </div>
@@ -298,22 +260,22 @@ const handleBack = () => {
                     <div class="p-6 pb-2">
                         <p
                             class="text-slate-600 text-base leading-relaxed"
-                            v-html="currentExampleData?.problem"
+                            v-html="curr?.story"
                         ></p>
                         <p
                             class="text-slate-900 font-bold mt-3 text-base border-t border-slate-100 pt-3"
-                            v-html="currentExampleData?.question"
+                            v-html="curr?.question"
                         ></p>
                     </div>
 
                     <div class="p-6 pt-2 space-y-3">
                         <div
-                            v-for="(step, index) in currentExampleData?.steps"
+                            v-for="(step, index) in curr?.steps"
                             :key="index"
                             class="flex items-center gap-3 transition-all duration-300"
-                            v-show="index <= currentStepIndex"
+                            v-show="index <= ui.step"
                             :class="
-                                index === currentStepIndex
+                                index === ui.step
                                     ? 'opacity-100'
                                     : 'opacity-60 grayscale'
                             "
@@ -322,19 +284,20 @@ const handleBack = () => {
                             :enter="{ opacity: 1, x: 0 }"
                         >
                             <div
-                                class="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold border transition-colors duration-300"
+                                class="shrink-0 w-6 h-6 rounded flex items-center justify-center text-[10px] font-bold border transition-colors duration-300"
                                 :class="
-                                    index === currentStepIndex
+                                    index === ui.step
                                         ? 'bg-violet-500 text-white border-violet-500'
                                         : 'bg-slate-100 text-slate-400 border-slate-200'
                                 "
                             >
                                 {{ index + 1 }}
                             </div>
+
                             <div
                                 class="flex-1 px-3 py-2 rounded border transition-all duration-300 flex justify-between items-center"
                                 :class="
-                                    index === currentStepIndex
+                                    index === ui.step
                                         ? 'bg-violet-50 border-violet-200'
                                         : 'bg-white border-transparent'
                                 "
@@ -352,7 +315,7 @@ const handleBack = () => {
                     </div>
 
                     <div
-                        v-if="isExampleFinished"
+                        v-if="isDone"
                         class="bg-violet-600 text-white p-6 text-center"
                         v-motion
                         :initial="{ height: 0, opacity: 0 }"
@@ -369,53 +332,54 @@ const handleBack = () => {
                         <div
                             class="font-recoleta text-3xl font-bold tracking-wide"
                         >
-                            {{ currentExampleData?.answer }}
+                            {{ curr?.answer }}
                         </div>
                     </div>
                 </div>
             </div>
 
             <div
-                v-if="!showIntro"
                 class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-full z-50"
             >
                 <div
                     class="relative flex items-center justify-between px-2 h-16"
                 >
                     <Button
-                        @click="handleBack"
+                        @click="back"
                         variant="text"
                         rounded
-                        class="!p-0 w-12 h-12 flex items-center justify-center text-slate-400 hover:bg-violet-50 hover:text-violet-600 transition-colors z-10"
+                        class="p-0! w-12 h-12 flex items-center justify-center text-zinc-900! hover:bg-violet-50 hover:text-violet-600 transition-colors z-10"
                     >
                         <i-lucide-arrow-left class="w-6 h-6" />
                     </Button>
+
                     <div
                         class="absolute left-1/2 -translate-x-1/2 flex gap-2 pointer-events-none"
                     >
                         <div
-                            v-for="(_ex, index) in examples"
-                            :key="index"
+                            v-for="(_, i) in problems"
+                            :key="i"
                             class="rounded-full transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]"
                             :class="
-                                currentExample === index
+                                ui.idx === i
                                     ? 'w-8 h-2 bg-violet-500'
                                     : 'w-2 h-2 bg-violet-200'
                             "
-                        ></div>
+                        />
                     </div>
+
                     <Button
-                        @click="handleNext"
+                        @click="next"
                         variant="text"
                         rounded
-                        class="flex items-center gap-2 text-zinc-900 font-bold hover:bg-zinc-50 px-4 py-2 transition-colors z-10"
+                        class="flex items-center gap-2 text-zinc-900! font-bold hover:bg-zinc-50 px-4 py-2 transition-colors z-10"
                     >
-                        <span v-if="!isExampleFinished">Lanjut</span>
-                        <span v-else-if="currentExample < examples.length - 1"
-                            >Soal 2</span
+                        <span v-if="!isDone">Lanjut</span>
+                        <span v-else-if="ui.idx < problems.length - 1"
+                            >Soal {{ ui.idx + 2 }}</span
                         >
                         <span v-else>Kuis</span>
-                        <i-lucide-arrow-right class="w-4 h-4" />
+                        <i-lucide-arrow-right class="w-6 h-6" />
                     </Button>
                 </div>
             </div>

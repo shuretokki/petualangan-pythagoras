@@ -9,10 +9,13 @@ import {
 export const useAuthStore = defineStore("auth", () => {
   const user = ref<User | null>(null);
   const loading = ref(true);
+  const isAuthenticated = computed(() => !!user.value);
 
-  const isAuthenticated = computed(() => user.value !== null);
-
+  let initialized = false;
   const initAuth = () => {
+    if (initialized) return;
+    initialized = true;
+
     onAuthStateChanged(auth, (firebaseUser) => {
       user.value = firebaseUser;
       loading.value = false;
@@ -28,9 +31,8 @@ export const useAuthStore = defineStore("auth", () => {
       );
       user.value = userCredential.user;
       return { success: true };
-    } catch (error: any) {
-      console.error("Login error:", error);
-      return { success: false, error: error.message };
+    } catch (e: any) {
+      return { success: false, e: e.message };
     }
   };
 
@@ -39,9 +41,8 @@ export const useAuthStore = defineStore("auth", () => {
       await signOut(auth);
       user.value = null;
       return { success: true };
-    } catch (error: any) {
-      console.error("Logout error:", error);
-      return { success: false, error: error.message };
+    } catch (e: any) {
+      return { success: false, e: e.message };
     }
   };
 

@@ -36,9 +36,14 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
     {
-      path: "/test",
-      name: "test",
-      component: () => import("@/views/test.vue"),
+      path: "/about",
+      name: "about",
+      component: () => import("@/views/AboutView.vue"),
+    },
+    {
+      path: "/labs",
+      name: "labs",
+      component: () => import("@/views/LabsView.vue"),
     },
   ],
 });
@@ -46,13 +51,11 @@ const router = createRouter({
 router.beforeEach((to, _from, next) => {
   const authStore = useAuthStore();
 
-  // 1. If route requires auth and user is NOT logged in -> Redirect to Login
   if (to.meta.requiresAuth && !authStore.isAuthenticated) {
     next({ name: "login" });
     return;
   }
 
-  // 2. If user IS logged in and tries to visit Login -> Redirect to Admin
   if (to.name === "login" && authStore.isAuthenticated) {
     next({ name: "admin" });
     return;

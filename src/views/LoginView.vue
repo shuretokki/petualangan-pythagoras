@@ -1,26 +1,23 @@
 <script setup lang="ts">
 const router = useRouter();
-const authStore = useAuthStore();
+const auth = useAuthStore();
 
-const email = ref("");
-const password = ref("");
-const errorMsg = ref("");
-const isLoading = ref(false);
+const form = reactive({ email: "", pass: "" });
+const ui = reactive({ loading: false, error: "" });
 
-const handleLogin = async () => {
-    if (!email.value || !password.value) {
-        errorMsg.value = "Mohon isi email dan password.";
-        return;
-    }
-    isLoading.value = true;
-    errorMsg.value = "";
-    const res = await authStore.login(email.value, password.value);
-    if (res.success) {
-        router.push({ name: "admin" });
-    } else {
-        errorMsg.value = "Login gagal. Periksa kredensial Anda.";
-    }
-    isLoading.value = false;
+const submit = async () => {
+    if (!form.email || !form.pass)
+        return (ui.error = "Mohon isi email dan password.");
+
+    ui.loading = true;
+    ui.error = "";
+
+    const res = await auth.login(form.email, form.pass);
+    ui.loading = false;
+
+    res.success
+        ? router.push({ name: "admin" })
+        : (ui.error = "Login gagal. Periksa kredensial Anda.");
 };
 </script>
 
@@ -31,10 +28,10 @@ const handleLogin = async () => {
         <div class="absolute inset-0 pointer-events-none z-0">
             <div
                 class="absolute -top-[10%] -right-[10%] w-[70%] h-[70%] rounded-full bg-slate-200/40 blur-3xl"
-            ></div>
+            />
             <div
-                class="absolute bottom-[10%] -left-[10%] w-[60%] h-[60%] rounded-full bg-violet-200/30 blur-3xl"
-            ></div>
+                class="absolute bottom-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-violet-200/30 blur-3xl"
+            />
         </div>
 
         <div class="relative z-10 w-full max-w-sm flex flex-col items-center">
@@ -53,7 +50,7 @@ const handleLogin = async () => {
             </div>
 
             <div class="w-full">
-                <form @submit.prevent="handleLogin" class="space-y-5">
+                <form @submit.prevent="submit" class="space-y-5">
                     <div class="space-y-1.5">
                         <label
                             class="text-xs font-bold text-zinc-400 uppercase tracking-wider ml-1"
@@ -65,10 +62,10 @@ const handleLogin = async () => {
                                 ><i-lucide-mail class="w-4 h-4"
                             /></span>
                             <InputText
-                                v-model="email"
+                                v-model="form.email"
                                 type="email"
-                                class="w-full !pl-12 !bg-white !border-zinc-200 !text-zinc-800 !rounded-2xl !py-3 focus:!border-zinc-400 focus:!ring-0 shadow-sm"
                                 placeholder="admin@sekolah.id"
+                                class="w-full !pl-12 !bg-white !border-zinc-200 !text-zinc-800 !rounded-2xl !py-3 focus:!border-zinc-400 focus:!ring-0"
                             />
                         </div>
                     </div>
@@ -80,41 +77,38 @@ const handleLogin = async () => {
                         >
                         <div class="relative">
                             <Password
-                                v-model="password"
+                                v-model="form.pass"
                                 :feedback="false"
                                 toggleMask
-                                inputClass="w-full !pl-4 !bg-white !border-zinc-200 !text-zinc-800 !rounded-2xl !py-3 focus:!border-zinc-400 focus:!ring-0 shadow-sm"
-                                class="w-full"
                                 placeholder="••••••••"
+                                inputClass="w-full !pl-4 !bg-white !border-zinc-200 !text-zinc-800 !rounded-2xl !py-3 focus:!border-zinc-400 focus:!ring-0"
+                                class="w-full"
                             />
                         </div>
                     </div>
 
                     <div
-                        v-if="errorMsg"
+                        v-if="ui.error"
                         class="p-3 bg-rose-50 border border-rose-100 rounded-xl flex items-center gap-3 text-sm text-rose-600 font-medium"
                     >
-                        <i-lucide-alert-circle class="w-4 h-4" />
-                        {{ errorMsg }}
+                        <i-lucide-alert-circle class="w-4 h-4 shrink-0" />
+                        {{ ui.error }}
                     </div>
 
                     <Button
                         type="submit"
                         label="Sign In"
-                        class="w-full !bg-zinc-900 !border-zinc-900 !text-white !rounded-2xl !py-3.5 !font-bold hover:!bg-zinc-800 shadow-lg shadow-zinc-200/50 transition-all mt-2"
-                        :loading="isLoading"
+                        :loading="ui.loading"
+                        class="w-full !bg-zinc-900 !border-zinc-900 !text-white !rounded-2xl !py-3.5 !font-bold hover:!bg-zinc-800 mt-2"
                     />
                 </form>
 
                 <div class="mt-8 pt-6 text-center">
                     <router-link
                         :to="{ name: 'home' }"
-                        class="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-800 transition-colors font-medium group"
+                        class="inline-flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-800 transition-colors font-medium"
                     >
-                        <i-lucide-arrow-left
-                            class="w-4 h-4 group-hover:-translate-x-1 transition-transform"
-                        />
-                        Kembali ke Home
+                        <i-lucide-arrow-left class="w-4 h-4" /> Kembali ke Home
                     </router-link>
                 </div>
             </div>

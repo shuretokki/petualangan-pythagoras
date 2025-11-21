@@ -38,11 +38,9 @@ export const useQuizStore = defineStore("quiz", () => {
       (q) => q.difficulty === difficulty,
     );
 
-    // Shuffle
     const shuffled = [...filtered];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      // Use non-null assertion (!) because we know i and j are within bounds
       const temp = shuffled[i]!;
       shuffled[i] = shuffled[j]!;
       shuffled[j] = temp;
