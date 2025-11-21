@@ -1,7 +1,15 @@
 <script setup lang="ts">
+import { ref, computed, reactive, onUnmounted, watch } from "vue";
+import { useRouter } from "vue-router";
+import Button from "primevue/button";
+import PytaSpeech from "../components/PytaSpeech.vue";
+import SectionIntro from "../components/SectionIntro.vue"; // Import Intro
+
 const router = useRouter();
+const showIntro = ref(true); // Intro State
 const currentStep = ref(0);
 
+// ... (Keep all existing Interface, State, and Logic exactly as is) ...
 interface Triangle {
     id: number;
     fillColor: string;
@@ -16,7 +24,6 @@ interface Triangle {
     isLocked: boolean;
     isDragging: boolean;
 }
-
 const triangles = reactive<Triangle[]>([
     {
         id: 1,
@@ -75,19 +82,15 @@ const triangles = reactive<Triangle[]>([
         isDragging: false,
     },
 ]);
-
 const draggedItem = ref<Triangle | null>(null);
 let startX = 0;
 let startY = 0;
 let startElemX = 0;
 let startElemY = 0;
-
 const isPuzzleComplete = computed(() => triangles.every((t) => t.isLocked));
-
 watch(isPuzzleComplete, (newVal) => {
     if (newVal && navigator.vibrate) navigator.vibrate([50, 50, 50]);
 });
-
 const startDrag = (e: PointerEvent, item: Triangle) => {
     if (item.isLocked) return;
     e.preventDefault();
@@ -100,14 +103,12 @@ const startDrag = (e: PointerEvent, item: Triangle) => {
     window.addEventListener("pointermove", onDrag);
     window.addEventListener("pointerup", endDrag);
 };
-
 const onDrag = (e: PointerEvent) => {
     if (!draggedItem.value) return;
     e.preventDefault();
     draggedItem.value.currentLeft = startElemX + (e.clientX - startX);
     draggedItem.value.currentTop = startElemY + (e.clientY - startY);
 };
-
 const endDrag = () => {
     if (draggedItem.value) {
         checkSnap(draggedItem.value);
@@ -117,7 +118,6 @@ const endDrag = () => {
     window.removeEventListener("pointermove", onDrag);
     window.removeEventListener("pointerup", endDrag);
 };
-
 const checkSnap = (item: Triangle) => {
     const SNAP_THRESHOLD = 45;
     const dist = Math.hypot(
@@ -134,13 +134,10 @@ const checkSnap = (item: Triangle) => {
         item.currentTop = item.initialTop;
     }
 };
-
 onUnmounted(() => {
     window.removeEventListener("pointermove", onDrag);
     window.removeEventListener("pointerup", endDrag);
 });
-
-// Content from PDF "Hijau Biru Ilustrasi Alam Tugas Presentasi"
 const steps = [
     {
         title: "Rahasia Pythagoras",
@@ -173,23 +170,30 @@ const steps = [
             "Nah, inilah <strong>Teorema Pythagoras</strong>! <br><em>a² + b² = c²</em> <br>(dengan c adalah hipotenusa).",
     },
 ];
-
 const currentStepData = computed(() => steps[currentStep.value]);
-
 const nextStep = () => {
     if (currentStep.value === 1 && !isPuzzleComplete.value) return;
     currentStep.value < steps.length - 1
         ? currentStep.value++
         : router.push({ name: "contoh-soal" });
 };
-
 const previousStep = () => {
     if (currentStep.value > 0) currentStep.value--;
 };
 </script>
 
 <template>
+    <SectionIntro
+        v-if="showIntro"
+        title="Materi Pembelajaran"
+        description="Ayo kita bongkar rahasia di balik rumus Pythagoras dengan puzzle interaktif!"
+        buttonText="Mulai Belajar"
+        variant="emerald"
+        @start="showIntro = false"
+    />
+
     <div
+        v-else
         class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FAFAFA] overflow-hidden relative font-sans text-slate-900"
     >
         <div class="fixed inset-0 pointer-events-none">
@@ -206,9 +210,6 @@ const previousStep = () => {
             <div class="flex-1 flex flex-col items-center pb-32 pt-8 px-6">
                 <div
                     class="text-[10px] font-bold text-emerald-600 tracking-widest uppercase mb-3"
-                    v-motion
-                    :initial="{ opacity: 0, y: -10 }"
-                    :enter="{ opacity: 1, y: 0, transition: { delay: 100 } }"
                 >
                     Materi Pembelajaran
                 </div>
@@ -227,6 +228,219 @@ const previousStep = () => {
                     class="flex justify-center mb-10 w-full z-20 min-h-[120px] items-center"
                 >
                     <PytaSpeech :text="currentStepData?.content || ''" />
+                </div>
+
+                <div
+                    v-if="currentStep >= 1"
+                    class="w-full flex justify-center mb-4"
+                    v-motion
+                    :initial="{ opacity: 0, scale: 0.9 }"
+                    :enter="{
+                        opacity: 1,
+                        scale: 1,
+                        transition: { duration: 500 },
+                    }"
+                >
+                    <div class="relative w-full">
+                        <div
+                            v-if="isPuzzleComplete && currentStep === 1"
+                            class="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in duration-300"
+                        >
+                            <div
+                                class="bg-white/90 backdrop-blur text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1"
+                            >
+                                <i-lucide-check class="w-3 h-3" />Sempurna!
+                            </div>
+                        </div>
+                        <div
+                            v-if="currentStep >= 2"
+                            class="absolute -left-4 top-1/2 -translate-y-1/2 flex flex-col items-center text-xs font-bold text-slate-400 h-[150px] justify-between z-20"
+                            v-motion
+                            :initial="{ opacity: 0 }"
+                            :enter="{ opacity: 1 }"
+                        >
+                            <span class="font-serif italic">a</span>
+                            <div class="h-full w-px bg-slate-300 my-1"></div>
+                            <span class="font-serif italic">b</span>
+                        </div>
+                        <div
+                            v-if="currentStep >= 2"
+                            class="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center text-xs font-bold text-slate-400 w-[150px] justify-between z-20"
+                            v-motion
+                            :initial="{ opacity: 0 }"
+                            :enter="{ opacity: 1 }"
+                        >
+                            <span class="font-serif italic">b</span>
+                            <div class="w-full h-px bg-slate-300 mx-1"></div>
+                            <span class="font-serif italic">a</span>
+                        </div>
+                        <div
+                            class="w-full bg-white border-2 rounded-lg overflow-hidden select-none touch-none transition-all duration-700 ease-in-out relative z-10"
+                            :class="[
+                                currentStep >= 2
+                                    ? 'h-[220px] border-zinc-100'
+                                    : 'h-[450px]',
+                                isPuzzleComplete && currentStep === 1
+                                    ? 'border-emerald-400'
+                                    : 'border-zinc-100',
+                            ]"
+                            style="
+                                background-image: radial-gradient(
+                                    #e5e7eb 1px,
+                                    transparent 1px
+                                );
+                                background-size: 20px 20px;
+                            "
+                        >
+                            <div class="relative w-[300px] h-full mx-auto">
+                                <template v-if="currentStep === 1">
+                                    <div
+                                        v-for="item in triangles"
+                                        :key="'ghost-' + item.id"
+                                        class="absolute w-[100px] h-[50px] pointer-events-none transition-all duration-300 z-10"
+                                        :style="{
+                                            left: item.targetLeft + 'px',
+                                            top: item.targetTop + 'px',
+                                            transform: `rotate(${item.rotation}deg)`,
+                                            transformOrigin: 'top left',
+                                        }"
+                                    >
+                                        <svg
+                                            width="100"
+                                            height="50"
+                                            viewBox="0 0 100 50"
+                                            class="overflow-visible"
+                                        >
+                                            <path
+                                                d="M0 0 L100 0 L0 50 Z"
+                                                fill="none"
+                                                stroke-width="2"
+                                                stroke-dasharray="5,5"
+                                                stroke-linejoin="miter"
+                                                :stroke="
+                                                    draggedItem?.id === item.id
+                                                        ? '#34d399'
+                                                        : '#cbd5e1'
+                                                "
+                                                class="transition-colors duration-300"
+                                            />
+                                            <path
+                                                v-if="
+                                                    draggedItem?.id === item.id
+                                                "
+                                                d="M0 0 L100 0 L0 50 Z"
+                                                fill="#10b981"
+                                                opacity="0.15"
+                                            />
+                                            <text
+                                                v-if="
+                                                    draggedItem?.id === item.id
+                                                "
+                                                x="33.33"
+                                                y="20"
+                                                font-size="10"
+                                                font-weight="bold"
+                                                fill="#059669"
+                                                text-anchor="middle"
+                                                :transform="`rotate(${-item.rotation}, 33.33, 20)`"
+                                                style="
+                                                    text-shadow: 0px 0px 2px
+                                                        white;
+                                                "
+                                            >
+                                                Sini!
+                                            </text>
+                                        </svg>
+                                    </div>
+                                </template>
+                                <div
+                                    v-for="item in triangles"
+                                    :key="item.id"
+                                    @pointerdown="(e) => startDrag(e, item)"
+                                    class="absolute w-[100px] h-[50px] touch-none"
+                                    :class="[
+                                        currentStep === 1
+                                            ? item.isLocked
+                                                ? 'z-20 cursor-default'
+                                                : 'z-50 cursor-grab active:cursor-grabbing'
+                                            : 'z-20 pointer-events-none',
+                                        item.isLocked
+                                            ? 'opacity-100'
+                                            : 'opacity-90',
+                                        item.isDragging && currentStep === 1
+                                            ? 'transition-none scale-110 z-[100]'
+                                            : 'transition-all duration-500 ease-out',
+                                    ]"
+                                    :style="{
+                                        left: item.currentLeft + 'px',
+                                        top: item.currentTop + 'px',
+                                        transform: `rotate(${item.rotation}deg)`,
+                                        transformOrigin: 'top left',
+                                    }"
+                                >
+                                    <svg
+                                        width="100"
+                                        height="50"
+                                        viewBox="0 0 100 50"
+                                        class="overflow-visible"
+                                    >
+                                        <path
+                                            d="M0 0 L100 0 L0 50 Z"
+                                            :fill="item.fillColor"
+                                            :stroke="item.strokeColor"
+                                            stroke-width="2"
+                                            stroke-linejoin="miter"
+                                        />
+                                        <text
+                                            x="-10"
+                                            y="25"
+                                            font-size="14"
+                                            font-weight="bold"
+                                            fill="#18181b"
+                                            text-anchor="middle"
+                                            class="select-none font-serif italic"
+                                        >
+                                            a
+                                        </text>
+                                        <text
+                                            x="50"
+                                            y="-8"
+                                            font-size="14"
+                                            font-weight="bold"
+                                            fill="#18181b"
+                                            text-anchor="middle"
+                                            class="select-none font-serif italic"
+                                        >
+                                            b
+                                        </text>
+                                        <text
+                                            x="55"
+                                            y="35"
+                                            font-size="14"
+                                            font-weight="bold"
+                                            fill="#18181b"
+                                            text-anchor="middle"
+                                            class="select-none font-serif italic"
+                                        >
+                                            c
+                                        </text>
+                                    </svg>
+                                </div>
+                                <div
+                                    v-if="
+                                        currentStep === 1 && !isPuzzleComplete
+                                    "
+                                    class="absolute bottom-4 w-full text-center"
+                                >
+                                    <p
+                                        class="text-slate-400 text-xs bg-white/80 inline-block px-3 py-1 rounded-lg backdrop-blur-sm border border-slate-100"
+                                    >
+                                        Geser segitiga ke area putus-putus
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div
@@ -249,7 +463,6 @@ const previousStep = () => {
                                 opacity="0.1"
                                 class="animate-pulse"
                             />
-
                             <g class="animate-float-slow">
                                 <path
                                     d="M60 40 L100 40 L60 70 Z"
@@ -331,224 +544,6 @@ const previousStep = () => {
                             >
                                 4 Segitiga Siku-Siku
                             </p>
-                        </div>
-                    </div>
-                </div>
-
-                <div
-                    v-if="currentStep >= 1"
-                    class="w-full flex justify-center mb-4"
-                    v-motion
-                    :initial="{ opacity: 0, scale: 0.9 }"
-                    :enter="{
-                        opacity: 1,
-                        scale: 1,
-                        transition: { duration: 500 },
-                    }"
-                >
-                    <div class="relative w-full">
-                        <div
-                            v-if="isPuzzleComplete && currentStep === 1"
-                            class="absolute top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in zoom-in duration-300"
-                        >
-                            <div
-                                class="bg-white/90 backdrop-blur text-emerald-600 text-xs font-bold px-3 py-1.5 rounded-lg border border-emerald-100 flex items-center gap-1"
-                            >
-                                <i-lucide-check class="w-3 h-3" />
-                                Sempurna!
-                            </div>
-                        </div>
-
-                        <div
-                            v-if="currentStep >= 2"
-                            class="absolute -left-4 top-1/2 -translate-y-1/2 flex flex-col items-center text-xs font-bold text-slate-400 h-[150px] justify-between z-20"
-                            v-motion
-                            :initial="{ opacity: 0 }"
-                            :enter="{ opacity: 1 }"
-                        >
-                            <span class="font-serif italic">a</span>
-                            <div class="h-full w-px bg-slate-300 my-1"></div>
-                            <span class="font-serif italic">b</span>
-                        </div>
-                        <div
-                            v-if="currentStep >= 2"
-                            class="absolute -top-5 left-1/2 -translate-x-1/2 flex items-center text-xs font-bold text-slate-400 w-[150px] justify-between z-20"
-                            v-motion
-                            :initial="{ opacity: 0 }"
-                            :enter="{ opacity: 1 }"
-                        >
-                            <span class="font-serif italic">b</span>
-                            <div class="w-full h-px bg-slate-300 mx-1"></div>
-                            <span class="font-serif italic">a</span>
-                        </div>
-
-                        <div
-                            class="w-full bg-white border-2 rounded-lg overflow-hidden select-none touch-none transition-all duration-700 ease-in-out relative z-10"
-                            :class="[
-                                currentStep >= 2
-                                    ? 'h-[220px] border-zinc-100'
-                                    : 'h-[450px]',
-                                isPuzzleComplete && currentStep === 1
-                                    ? 'border-emerald-400'
-                                    : 'border-zinc-100',
-                            ]"
-                            style="
-                                background-image: radial-gradient(
-                                    #e5e7eb 1px,
-                                    transparent 1px
-                                );
-                                background-size: 20px 20px;
-                            "
-                        >
-                            <div class="relative w-[300px] h-full mx-auto">
-                                <template v-if="currentStep === 1">
-                                    <div
-                                        v-for="item in triangles"
-                                        :key="'ghost-' + item.id"
-                                        class="absolute w-[100px] h-[50px] pointer-events-none transition-all duration-300 z-10"
-                                        :style="{
-                                            left: item.targetLeft + 'px',
-                                            top: item.targetTop + 'px',
-                                            transform: `rotate(${item.rotation}deg)`,
-                                            transformOrigin: 'top left',
-                                        }"
-                                    >
-                                        <svg
-                                            width="100"
-                                            height="50"
-                                            viewBox="0 0 100 50"
-                                            class="overflow-visible"
-                                        >
-                                            <path
-                                                d="M0 0 L100 0 L0 50 Z"
-                                                fill="none"
-                                                stroke-width="2"
-                                                stroke-dasharray="5,5"
-                                                stroke-linejoin="miter"
-                                                :stroke="
-                                                    draggedItem?.id === item.id
-                                                        ? '#34d399'
-                                                        : '#cbd5e1'
-                                                "
-                                                class="transition-colors duration-300"
-                                            />
-                                            <path
-                                                v-if="
-                                                    draggedItem?.id === item.id
-                                                "
-                                                d="M0 0 L100 0 L0 50 Z"
-                                                fill="#10b981"
-                                                opacity="0.15"
-                                            />
-                                            <text
-                                                v-if="
-                                                    draggedItem?.id === item.id
-                                                "
-                                                x="33.33"
-                                                y="20"
-                                                font-size="10"
-                                                font-weight="bold"
-                                                fill="#059669"
-                                                text-anchor="middle"
-                                                :transform="`rotate(${-item.rotation}, 33.33, 20)`"
-                                                style="
-                                                    text-shadow: 0px 0px 2px
-                                                        white;
-                                                "
-                                            >
-                                                Sini!
-                                            </text>
-                                        </svg>
-                                    </div>
-                                </template>
-
-                                <div
-                                    v-for="item in triangles"
-                                    :key="item.id"
-                                    @pointerdown="(e) => startDrag(e, item)"
-                                    class="absolute w-[100px] h-[50px] touch-none"
-                                    :class="[
-                                        currentStep === 1
-                                            ? item.isLocked
-                                                ? 'z-20 cursor-default'
-                                                : 'z-50 cursor-grab active:cursor-grabbing'
-                                            : 'z-20 pointer-events-none',
-                                        item.isLocked
-                                            ? 'opacity-100'
-                                            : 'opacity-90',
-                                        item.isDragging && currentStep === 1
-                                            ? 'transition-none scale-110 z-[100]'
-                                            : 'transition-all duration-500 ease-out',
-                                    ]"
-                                    :style="{
-                                        left: item.currentLeft + 'px',
-                                        top: item.currentTop + 'px',
-                                        transform: `rotate(${item.rotation}deg)`,
-                                        transformOrigin: 'top left',
-                                    }"
-                                >
-                                    <svg
-                                        width="100"
-                                        height="50"
-                                        viewBox="0 0 100 50"
-                                        class="overflow-visible"
-                                    >
-                                        <path
-                                            d="M0 0 L100 0 L0 50 Z"
-                                            :fill="item.fillColor"
-                                            :stroke="item.strokeColor"
-                                            stroke-width="2"
-                                            stroke-linejoin="miter"
-                                        />
-                                        <text
-                                            x="-10"
-                                            y="25"
-                                            font-size="14"
-                                            font-weight="bold"
-                                            fill="#18181b"
-                                            text-anchor="middle"
-                                            class="select-none font-serif italic"
-                                        >
-                                            a
-                                        </text>
-                                        <text
-                                            x="50"
-                                            y="-8"
-                                            font-size="14"
-                                            font-weight="bold"
-                                            fill="#18181b"
-                                            text-anchor="middle"
-                                            class="select-none font-serif italic"
-                                        >
-                                            b
-                                        </text>
-                                        <text
-                                            x="55"
-                                            y="35"
-                                            font-size="14"
-                                            font-weight="bold"
-                                            fill="#18181b"
-                                            text-anchor="middle"
-                                            class="select-none font-serif italic"
-                                        >
-                                            c
-                                        </text>
-                                    </svg>
-                                </div>
-
-                                <div
-                                    v-if="
-                                        currentStep === 1 && !isPuzzleComplete
-                                    "
-                                    class="absolute bottom-4 w-full text-center"
-                                >
-                                    <p
-                                        class="text-slate-400 text-xs bg-white/80 inline-block px-3 py-1 rounded-lg backdrop-blur-sm border border-slate-100"
-                                    >
-                                        Geser segitiga ke area putus-putus
-                                    </p>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -709,6 +704,17 @@ const previousStep = () => {
 </template>
 
 <style scoped>
+.animate-strike {
+    animation: strike 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
+}
+@keyframes strike {
+    from {
+        width: 0;
+    }
+    to {
+        width: 100%;
+    }
+}
 .animate-float-slow {
     animation: float 6s ease-in-out infinite;
 }
@@ -725,17 +731,6 @@ const previousStep = () => {
     }
     50% {
         transform: translateY(-10px) rotate(5deg);
-    }
-}
-.animate-strike {
-    animation: strike 0.5s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards;
-}
-@keyframes strike {
-    from {
-        width: 0;
-    }
-    to {
-        width: 100%;
     }
 }
 </style>

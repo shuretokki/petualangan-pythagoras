@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import { ref, computed, watch } from "vue";
+import { useRouter } from "vue-router";
 import { useQuizStore } from "@/stores/quiz";
 import { useDocument } from "vuefire";
 import { doc } from "firebase/firestore";
 import { db } from "@/firebase";
 import type { Quiz, Difficulty } from "@/types/models";
+import Button from "primevue/button";
+import PytaSpeech from "../components/PytaSpeech.vue";
+import SectionIntro from "../components/SectionIntro.vue";
 import mascotImg from "@/assets/image/mascot.png";
 
 const router = useRouter();
@@ -18,6 +23,7 @@ watch(
     { immediate: true },
 );
 
+const showIntro = ref(true);
 const isSelectingLevel = ref(true);
 const levels: { id: Difficulty; label: string; color: string }[] = [
     {
@@ -68,7 +74,17 @@ const goHome = () => {
 </script>
 
 <template>
+    <SectionIntro
+        v-if="showIntro"
+        title="Kuis Pythagoras"
+        description="Waktunya menguji kemampuanmu! Pilih level dan kerjakan soal sebaik mungkin."
+        buttonText="Siap, Mulai!"
+        variant="violet"
+        @start="showIntro = false"
+    />
+
     <div
+        v-else
         class="min-h-screen flex flex-col items-center justify-center w-full bg-[#FDFBFF] overflow-hidden relative font-sans text-slate-900"
     >
         <div class="fixed inset-0 pointer-events-none">
@@ -114,68 +130,18 @@ const goHome = () => {
                             :class="lvl.color"
                         >
                             <div class="text-3xl">
-                                <svg
+                                <i-lucide-sprout
                                     v-if="lvl.id === 'easy'"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="32"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path
-                                        d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"
-                                    />
-                                    <path d="M12 14v2" />
-                                    <path d="M12 8v2" />
-                                    <path d="m4.93 4.93 1.41 1.41" />
-                                    <path d="m17.66 17.66 1.41 1.41" />
-                                    <path d="M2 12h2" />
-                                    <path d="M20 12h2" />
-                                    <path d="m6.34 17.66-1.41 1.41" />
-                                    <path d="m19.07 4.93-1.41 1.41" />
-                                </svg>
-                                <svg
+                                    class="w-8 h-8"
+                                />
+                                <i-lucide-flame
                                     v-if="lvl.id === 'medium'"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="32"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <rect
-                                        width="18"
-                                        height="18"
-                                        x="3"
-                                        y="3"
-                                        rx="2"
-                                    />
-                                    <path d="M3 9h18" />
-                                    <path d="M9 21V9" />
-                                </svg>
-                                <svg
+                                    class="w-8 h-8"
+                                />
+                                <i-lucide-zap
                                     v-if="lvl.id === 'hard'"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="32"
-                                    height="32"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <polygon
-                                        points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"
-                                    />
-                                </svg>
+                                    class="w-8 h-8"
+                                />
                             </div>
                             <div class="text-left">
                                 <h3 class="font-recoleta text-xl font-bold">
@@ -188,21 +154,9 @@ const goHome = () => {
                                 </p>
                             </div>
                             <div class="flex-1 text-right">
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    class="opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
-                                >
-                                    <path d="M5 12h14" />
-                                    <path d="m12 5 7 7-7 7" />
-                                </svg>
+                                <i-lucide-arrow-right
+                                    class="w-6 h-6 opacity-0 group-hover:opacity-100 transition-opacity ml-auto"
+                                />
                             </div>
                         </button>
                     </div>
@@ -245,7 +199,6 @@ const goHome = () => {
                                 alt="Soal Image"
                             />
                         </div>
-
                         <div class="p-6 pb-4">
                             <h2
                                 class="font-recoleta text-xl text-slate-800 leading-relaxed font-bold"
@@ -253,7 +206,6 @@ const goHome = () => {
                                 {{ currentQuestion?.text }}
                             </h2>
                         </div>
-
                         <div class="p-6 pt-0 space-y-3">
                             <button
                                 v-for="(
@@ -312,7 +264,6 @@ const goHome = () => {
                             </div>
                         </div>
                     </div>
-
                     <h1 class="font-recoleta text-4xl text-slate-800 mb-2">
                         {{
                             quizStore.score >= 80
@@ -322,7 +273,6 @@ const goHome = () => {
                                   : "Coba Lagi Yuk!"
                         }}
                     </h1>
-
                     <p class="text-slate-500 mb-10 px-8 leading-relaxed">
                         {{
                             quizStore.score >= 80
@@ -330,14 +280,12 @@ const goHome = () => {
                                 : "Jangan menyerah, pelajari materi lagi dan coba lagi!"
                         }}
                     </p>
-
                     <div class="flex flex-col w-full gap-3 px-6">
                         <Button
                             @click="restartQuiz"
                             label="Main Lagi / Ganti Level"
                             class="!w-full !rounded-lg !bg-violet-600 !border-violet-600 !font-bold !py-3 !text-white"
-                        />
-                        <Button
+                        /><Button
                             @click="goHome"
                             label="Home"
                             variant="outlined"
@@ -349,7 +297,7 @@ const goHome = () => {
 
             <div
                 v-if="!isSelectingLevel && !quizStore.quizCompleted"
-                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-lg z-50"
+                class="fixed bottom-6 left-1/2 -translate-x-1/2 w-[90%] max-w-[350px] bg-white/90 backdrop-blur-xl border border-violet-200/60 rounded-full z-50"
             >
                 <div
                     class="relative flex items-center justify-between px-2 h-16"
@@ -392,7 +340,7 @@ const goHome = () => {
                         variant="text"
                         rounded
                         :disabled="!selectedAnswer"
-                        class="flex items-center gap-2 font-bold px-4 py-2 transition-colors z-10"
+                        class="flex items-center gap-2 text-zinc-900 font-bold hover:bg-zinc-50 px-4 py-2 transition-colors z-10"
                         :class="
                             !selectedAnswer
                                 ? '!text-slate-300'
