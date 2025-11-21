@@ -30,7 +30,7 @@ const submit = async () => {
         class="fixed inset-0 bg-zinc-50 font-sans text-zinc-900 flex justify-center overflow-hidden"
     >
         <div
-            class="w-full max-w-md bg-white h-full shadow-sm flex flex-col relative"
+            class="w-full max-w-md bg-white h-full border border-zinc-200 flex flex-col relative"
         >
             <header
                 class="flex-none z-30 bg-white border-b border-zinc-100 px-4 h-14 flex items-center gap-3"
@@ -51,7 +51,7 @@ const submit = async () => {
                     class="flex flex-col items-center py-8 animate-in slide-in-from-bottom-4 duration-500"
                 >
                     <div
-                        class="w-16 h-16 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-800 mb-4 border border-zinc-100 shadow-sm"
+                        class="w-16 h-16 bg-zinc-50 rounded-2xl flex items-center justify-center text-zinc-800 mb-4 border border-zinc-100"
                     >
                         <i-lucide-lock class="w-8 h-8" />
                     </div>

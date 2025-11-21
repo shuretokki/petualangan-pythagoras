@@ -138,7 +138,9 @@ onMounted(init);
     <div
         class="fixed inset-0 bg-zinc-50 font-sans text-zinc-900 flex justify-center overflow-hidden"
     >
-        <div class="w-full max-w-md bg-white h-full flex flex-col relative">
+        <div
+            class="w-full max-w-md bg-white border border-zinc-200 h-full flex flex-col relative"
+        >
             <header
                 class="flex-none z-30 bg-white border-b border-zinc-100 px-4 h-14 flex items-center justify-between"
             >
