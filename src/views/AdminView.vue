@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { reactive, ref, computed, watch, onMounted } from "vue";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
 import { useAuthStore } from "@/stores/auth";
@@ -10,8 +11,7 @@ const QUIZ_ID = "quiz-pythagoras-1";
 
 const ui = reactive({
     loading: false,
-    adding: false,
-    editing: false,
+    view: "list" as "list" | "form",
     tab: "easy" as Difficulty,
 });
 const quiz = ref<Quiz | null>(null);
@@ -40,26 +40,26 @@ const questions = computed(() => {
 });
 
 const list = computed(() => questions.value[ui.tab] || []);
-const stats = computed(() => [
+const tabs = [
     {
         id: "easy",
         label: "Mudah",
-        count: questions.value.easy.length,
-        color: "bg-emerald-100 text-emerald-700",
+        icon: "sprout",
+        color: "text-emerald-600 bg-emerald-50 ring-emerald-500",
     },
     {
         id: "medium",
         label: "Sedang",
-        count: questions.value.medium.length,
-        color: "bg-amber-100 text-amber-700",
+        icon: "flame",
+        color: "text-amber-600 bg-amber-50 ring-amber-500",
     },
     {
         id: "hard",
         label: "Sulit",
-        count: questions.value.hard.length,
-        color: "bg-rose-100 text-rose-700",
+        icon: "zap",
+        color: "text-rose-600 bg-rose-50 ring-rose-500",
     },
-]);
+] as const;
 
 watch(
     [correctIdx, () => draft.value.options],
@@ -72,28 +72,19 @@ watch(
 
 const init = async () => {
     ui.loading = true;
-    try {
-        const snap = await getDoc(doc(db, "quizzes", QUIZ_ID));
-        if (snap.exists()) {
-            quiz.value = { id: snap.id, ...snap.data() } as Quiz;
-        } else {
-            const newData: Quiz = {
-                title: "Bank Soal Pythagoras",
-                questions: [],
-            };
-            await setDoc(doc(db, "quizzes", QUIZ_ID), newData);
-            quiz.value = { id: QUIZ_ID, ...newData };
-        }
-    } catch (e) {
-        console.error(e);
-    } finally {
-        ui.loading = false;
+    const snap = await getDoc(doc(db, "quizzes", QUIZ_ID));
+    if (snap.exists()) quiz.value = { id: snap.id, ...snap.data() } as Quiz;
+    else {
+        const newData: Quiz = { title: "Bank Soal", questions: [] };
+        await setDoc(doc(db, "quizzes", QUIZ_ID), newData);
+        quiz.value = { id: QUIZ_ID, ...newData };
     }
+    ui.loading = false;
 };
 
 const handleImg = (file: File) => {
     if (!file.type.startsWith("image/") || file.size > 500 * 1024)
-        return alert("Image only, max 500KB.");
+        return alert("Max 500KB.");
     const reader = new FileReader();
     reader.onload = (e) => {
         if (e.target?.result) draft.value.imageUrl = e.target.result as string;
@@ -104,55 +95,40 @@ const handleImg = (file: File) => {
 const openForm = (q?: Question) => {
     correctIdx.value = null;
     draft.value = q ? JSON.parse(JSON.stringify(q)) : blank();
-
-    if (correctIdx.value === -1) correctIdx.value = null;
-
-    ui.editing = !!q;
-    ui.adding = true;
-    if (q) window.scrollTo({ top: 200, behavior: "smooth" });
+    if (q) {
+        const idx = draft.value.options.findIndex(
+            (o) => o.text === q.correctAnswer,
+        );
+        correctIdx.value = idx !== -1 ? idx : null;
+    }
+    ui.view = "form";
 };
 
 const save = async () => {
     if (!quiz.value || !draft.value.text || correctIdx.value === null)
-        return alert("Fill required fields.");
-
+        return alert("Isi semua data.");
     draft.value.difficulty = ui.tab;
-    draft.value.correctAnswer = draft.value.options[correctIdx.value]!.text;
+    draft.value.correctAnswer = draft.value.options[correctIdx.value].text;
 
-    // FIX: Create a shallow copy of the array to ensure reactivity triggers correctly
     const target = [...(quiz.value.questions || [])];
-
-    if (ui.editing && draft.value.id) {
+    if (draft.value.id) {
         const i = target.findIndex((q) => q.id === draft.value.id);
         if (i !== -1) target[i] = { ...draft.value };
     } else {
         draft.value.id = Date.now().toString();
         target.push({ ...draft.value });
     }
-
     quiz.value.questions = target;
-
-    try {
-        await updateDoc(doc(db, "quizzes", QUIZ_ID), { questions: target });
-        ui.adding = false;
-        draft.value = blank();
-        correctIdx.value = null; // Reset index after save
-    } catch (e) {
-        console.error(e);
-    }
+    await updateDoc(doc(db, "quizzes", QUIZ_ID), { questions: target });
+    ui.view = "list";
 };
 
 const remove = async (id: string) => {
-    if (!confirm("Delete?") || !quiz.value) return;
+    if (!confirm("Hapus?") || !quiz.value) return;
     quiz.value.questions = quiz.value.questions.filter((q) => q.id !== id);
     await updateDoc(doc(db, "quizzes", QUIZ_ID), {
         questions: quiz.value.questions,
-    }).catch(console.error);
-};
-
-const signout = async () => {
-    await logout();
-    router.push({ name: "login" });
+    });
 };
 
 onMounted(init);
@@ -160,302 +136,266 @@ onMounted(init);
 
 <template>
     <div
-        class="min-h-screen bg-[#FAFAFA] p-8 md:p-20 font-sans text-slate-900 pb-32"
+        class="fixed inset-0 bg-zinc-50 font-sans text-zinc-900 flex justify-center overflow-hidden"
     >
-        <div class="max-w-4xl mx-auto space-y-12">
-            <div class="text-center space-y-4">
-                <h1 class="font-recoleta text-5xl font-bold text-zinc-900">
+        <div class="w-full max-w-md bg-white h-full flex flex-col relative">
+            <header
+                class="flex-none z-30 bg-white border-b border-zinc-100 px-4 h-14 flex items-center justify-between"
+            >
+                <h1 class="font-recoleta text-lg font-bold text-zinc-800">
                     Admin Panel
                 </h1>
-                <p class="text-zinc-500">
-                    Kelola bank soal untuk aplikasi Pythagoras.
-                </p>
-                <div class="flex justify-center gap-3">
-                    <Button
-                        label="Refresh Data"
-                        text
-                        rounded
-                        :loading="ui.loading"
+                <div class="flex gap-1">
+                    <button
                         @click="init"
-                        class="text-slate-400! hover:text-slate-800!"
+                        class="p-2 text-zinc-400 hover:text-zinc-800 rounded-full hover:bg-zinc-50"
                     >
-                        <template #icon
-                            ><i-lucide-refresh-ccw class="mr-2 w-4 h-4"
-                        /></template>
-                    </Button>
-                    <Button
-                        label="Logout"
-                        text
-                        rounded
-                        severity="danger"
-                        @click="signout"
-                        class="hover:bg-rose-50!"
-                    >
-                        <template #icon
-                            ><i-lucide-log-out class="mr-2 w-4 h-4"
-                        /></template>
-                    </Button>
-                </div>
-            </div>
-
-            <section class="space-y-6">
-                <h2
-                    class="text-xs font-bold text-zinc-400 uppercase tracking-widest border-b border-zinc-200 pb-2 text-center"
-                >
-                    Pilih Tingkat Kesulitan
-                </h2>
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div
-                        v-for="stat in stats"
-                        :key="stat.id"
-                        @click="ui.tab = stat.id as Difficulty"
-                        class="cursor-pointer border rounded-lg p-6 text-center transition-colors duration-200"
-                        :class="
-                            ui.tab === stat.id
-                                ? 'bg-white border-zinc-400'
-                                : 'bg-zinc-50 border-transparent hover:border-zinc-200'
-                        "
-                    >
-                        <div
-                            class="w-12 h-12 rounded-lg mx-auto flex items-center justify-center mb-3 text-xl"
-                            :class="stat.color"
-                        >
-                            <i-lucide-sprout
-                                v-if="stat.id === 'easy'"
-                                class="w-6 h-6"
-                            />
-                            <i-lucide-flame
-                                v-if="stat.id === 'medium'"
-                                class="w-6 h-6"
-                            />
-                            <i-lucide-zap
-                                v-if="stat.id === 'hard'"
-                                class="w-6 h-6"
-                            />
-                        </div>
-                        <h3 class="font-bold text-zinc-800">
-                            {{ stat.label }}
-                        </h3>
-                        <p class="text-zinc-400 text-sm">
-                            {{ stat.count }} Soal
-                        </p>
-                    </div>
-                </div>
-            </section>
-
-            <section class="space-y-6">
-                <div
-                    class="flex items-center justify-between border-b border-zinc-200 pb-2"
-                >
-                    <h2
-                        class="text-xs font-bold text-zinc-400 uppercase tracking-widest"
-                    >
-                        Daftar Soal ({{ ui.tab }})
-                    </h2>
-                    <Button
-                        :label="ui.adding ? 'Batal' : 'Tambah Soal'"
-                        text
-                        rounded
+                        <i-lucide-refresh-ccw
+                            class="w-4 h-4"
+                            :class="{ 'animate-spin': ui.loading }"
+                        />
+                    </button>
+                    <button
                         @click="
-                            ui.adding
-                                ? ((ui.adding = false), (ui.editing = false))
-                                : openForm()
+                            logout().then(() => router.push({ name: 'login' }))
                         "
-                        class="text-zinc-900! font-bold! hover:bg-zinc-100!"
+                        class="p-2 text-rose-400 hover:text-rose-600 rounded-full hover:bg-rose-50"
                     >
-                        <template #icon>
-                            <i-lucide-x v-if="ui.adding" class="mr-2 w-4 h-4" />
-                            <i-lucide-plus v-else class="mr-2 w-4 h-4" />
-                        </template>
-                    </Button>
+                        <i-lucide-log-out class="w-4 h-4" />
+                    </button>
                 </div>
+            </header>
 
-                <div
-                    v-if="ui.adding"
-                    class="bg-white p-8 rounded-lg border border-zinc-200"
-                >
-                    <h3
-                        class="font-recoleta text-2xl font-bold text-zinc-900 mb-6 text-center"
+            <div
+                class="flex-1 overflow-y-auto overscroll-contain p-4 space-y-4 pb-safe no-scrollbar"
+            >
+                <template v-if="ui.view === 'list'">
+                    <div class="flex p-1 bg-zinc-100 rounded-xl shrink-0">
+                        <button
+                            v-for="t in tabs"
+                            :key="t.id"
+                            @click="ui.tab = t.id as Difficulty"
+                            class="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-xs font-bold transition-all"
+                            :class="
+                                ui.tab === t.id
+                                    ? `bg-white  ${t.color}`
+                                    : 'text-zinc-400 hover:text-zinc-600'
+                            "
+                        >
+                            <component class="w-3.5 h-3.5" />
+                            {{ t.label }}
+                            <span class="opacity-60 text-[10px]"
+                                >({{ questions[t.id].length }})</span
+                            >
+                        </button>
+                    </div>
+
+                    <button
+                        @click="openForm()"
+                        class="w-full py-3 border border-dashed border-zinc-300 rounded-xl text-zinc-400 text-sm font-bold hover:bg-zinc-50 hover:border-zinc-400 hover:text-zinc-600 flex items-center justify-center gap-2 transition-colors shrink-0"
                     >
-                        {{ ui.editing ? "Edit Soal" : "Buat Soal Baru" }}
-                    </h3>
-                    <div class="space-y-6 max-w-2xl mx-auto">
-                        <div class="space-y-2">
+                        <i-lucide-plus class="w-4 h-4" /> Tambah Soal
+                    </button>
+
+                    <div class="space-y-3 pb-8">
+                        <div
+                            v-for="(q, i) in list"
+                            :key="q.id"
+                            class="flex gap-3 bg-white border border-zinc-100 p-3 rounded-xl items-start"
+                        >
+                            <div
+                                class="shrink-0 w-12 h-12 bg-zinc-50 rounded-lg overflow-hidden border border-zinc-100"
+                            >
+                                <img
+                                    v-if="q.imageUrl"
+                                    :src="q.imageUrl"
+                                    class="w-full h-full object-cover"
+                                />
+                                <div
+                                    v-else
+                                    class="w-full h-full flex items-center justify-center text-zinc-300 font-recoleta font-bold text-lg"
+                                >
+                                    {{ i + 1 }}
+                                </div>
+                            </div>
+                            <div class="flex-1 min-w-0 pt-1">
+                                <p
+                                    class="text-sm font-bold text-zinc-800 truncate mb-1"
+                                >
+                                    {{ q.text }}
+                                </p>
+                                <p
+                                    class="text-[10px] text-zinc-400 bg-zinc-50 inline-block px-1.5 py-0.5 rounded border border-zinc-100"
+                                >
+                                    Ans: {{ q.correctAnswer }}
+                                </p>
+                            </div>
+                            <div class="flex flex-col gap-1 pt-1">
+                                <button
+                                    @click="openForm(q)"
+                                    class="p-1.5 text-zinc-400 hover:text-blue-500 hover:bg-blue-50 rounded"
+                                >
+                                    <i-lucide-pencil class="w-4 h-4" />
+                                </button>
+                                <button
+                                    @click="remove(q.id)"
+                                    class="p-1.5 text-zinc-400 hover:text-rose-500 hover:bg-rose-50 rounded"
+                                >
+                                    <i-lucide-trash-2 class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                        <div
+                            v-if="list.length === 0"
+                            class="text-center py-10 text-zinc-300 text-sm"
+                        >
+                            Belum ada soal.
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <div
+                        class="space-y-4 pb-8 animate-in slide-in-from-bottom-4 duration-300"
+                    >
+                        <div class="flex items-center gap-2 mb-2">
+                            <button
+                                @click="ui.view = 'list'"
+                                class="p-1 -ml-1 text-zinc-400"
+                            >
+                                <i-lucide-arrow-left class="w-5 h-5" />
+                            </button>
+                            <h2 class="font-bold text-zinc-800">
+                                {{ draft.id ? "Edit Soal" : "Soal Baru" }}
+                            </h2>
+                        </div>
+
+                        <div>
                             <label
-                                class="text-xs font-bold text-zinc-400 uppercase tracking-wider"
+                                class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1"
                                 >Pertanyaan</label
                             >
                             <Textarea
                                 v-model="draft.text"
                                 rows="3"
-                                placeholder="Tulis soal..."
-                                class="w-full bg-zinc-50! border-zinc-200! text-zinc-900! rounded-lg! p-4 focus:border-zinc-400! focus:ring-0!"
+                                placeholder="Tulis pertanyaan..."
+                                class="w-full mt-1 bg-zinc-50 border-zinc-200 rounded-xl text-sm p-3 focus:ring-0 focus:border-zinc-400"
                             />
                         </div>
 
-                        <div class="space-y-2">
+                        <div>
                             <label
-                                class="text-xs font-bold text-zinc-400 uppercase tracking-wider"
-                                >Gambar (Upload)</label
+                                class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1"
+                                >Gambar</label
                             >
-                            <div
-                                class="w-full h-32 border-2 border-dashed border-slate-300 rounded-lg bg-slate-50 hover:bg-slate-100 hover:border-slate-400 transition-colors flex flex-col items-center justify-center cursor-pointer relative overflow-hidden group"
-                                @dragover.prevent
-                                @drop.prevent="
-                                    (e) =>
-                                        e.dataTransfer?.files[0] &&
-                                        handleImg(e.dataTransfer.files[0])
-                                "
-                                @click="fileInput?.click()"
-                            >
-                                <input
-                                    type="file"
-                                    ref="fileInput"
-                                    class="hidden"
-                                    accept="image/*"
-                                    @change="
-                                        (e: any) =>
-                                            e.target.files[0] &&
-                                            handleImg(e.target.files[0])
-                                    "
-                                />
-
-                                <img
-                                    v-if="draft.imageUrl"
-                                    :src="draft.imageUrl"
-                                    class="absolute inset-0 w-full h-full object-contain bg-white p-2"
-                                />
+                            <div class="mt-1 flex gap-3">
                                 <div
-                                    v-else
-                                    class="text-center pointer-events-none"
+                                    @click="fileInput?.click()"
+                                    class="w-20 h-20 shrink-0 bg-zinc-50 border border-dashed border-zinc-300 rounded-xl flex flex-col items-center justify-center text-zinc-400 cursor-pointer hover:bg-zinc-100"
                                 >
-                                    <div
-                                        class="text-slate-400 mb-2 flex justify-center"
+                                    <i-lucide-image-plus class="w-5 h-5 mb-1" />
+                                    <span class="text-[9px] font-bold"
+                                        >Upload</span
                                     >
-                                        <i-lucide-image class="w-6 h-6" />
-                                    </div>
-                                    <p class="text-xs text-slate-500 font-bold">
-                                        Klik atau Geser Gambar Kesini
-                                    </p>
-                                    <p class="text-[10px] text-slate-400">
-                                        Maks 500KB
-                                    </p>
+                                    <input
+                                        type="file"
+                                        ref="fileInput"
+                                        class="hidden"
+                                        accept="image/*"
+                                        @change="
+                                            (e: any) =>
+                                                e.target.files[0] &&
+                                                handleImg(e.target.files[0])
+                                        "
+                                    />
                                 </div>
                                 <div
                                     v-if="draft.imageUrl"
-                                    class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity"
-                                    @click.stop="draft.imageUrl = ''"
+                                    class="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden border border-zinc-200 group"
                                 >
-                                    <span
-                                        class="text-white font-bold text-xs bg-red-500 px-3 py-1 rounded-lg"
-                                        >Hapus Gambar</span
+                                    <img
+                                        :src="draft.imageUrl"
+                                        class="w-full h-full object-cover"
+                                    />
+                                    <button
+                                        @click="draft.imageUrl = ''"
+                                        class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
                                     >
+                                        <i-lucide-x
+                                            class="w-5 h-5 text-white"
+                                        />
+                                    </button>
                                 </div>
                             </div>
                         </div>
 
-                        <div class="space-y-3">
+                        <div>
                             <label
-                                class="text-xs font-bold text-zinc-400 uppercase tracking-wider"
-                                >Pilihan Jawaban</label
+                                class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider pl-1 mb-1 block"
+                                >Jawaban Benar</label
                             >
-                            <div
-                                v-for="(opt, idx) in draft.options"
-                                :key="idx"
-                                class="flex items-center gap-3 bg-zinc-50 p-3 rounded-lg border border-zinc-200"
-                            >
-                                <RadioButton
-                                    v-model="correctIdx"
-                                    :inputId="`opt-${idx}`"
-                                    :value="idx"
-                                />
-                                <InputText
-                                    v-model="opt.text"
-                                    :placeholder="`Jawaban ${idx + 1}`"
-                                    class="w-full border-none! bg-transparent! text-zinc-900! shadow-none! focus:ring-0!"
-                                />
-                            </div>
-                        </div>
-
-                        <Button
-                            :label="
-                                ui.editing ? 'Simpan Perubahan' : 'Simpan Soal'
-                            "
-                            @click="save"
-                            class="w-full bg-zinc-900! border-zinc-900! text-white! rounded-lg! py-3! font-bold! hover:bg-zinc-800!"
-                        />
-                    </div>
-                </div>
-
-                <div
-                    v-if="list.length === 0 && !ui.adding"
-                    class="text-center py-12 text-zinc-400"
-                >
-                    Belum ada soal untuk level ini.
-                </div>
-
-                <div v-else class="grid gap-4">
-                    <div
-                        v-for="(q, idx) in list"
-                        :key="q.id"
-                        class="bg-white border border-zinc-100 p-6 rounded-lg flex gap-6 items-start hover:border-zinc-300 transition-colors"
-                    >
-                        <div
-                            class="shrink-0 w-8 h-8 bg-zinc-100 rounded-lg flex items-center justify-center text-zinc-500 text-xs font-bold"
-                        >
-                            {{ idx + 1 }}
-                        </div>
-                        <div class="flex-1 space-y-2">
-                            <div class="flex gap-4">
-                                <img
-                                    v-if="q.imageUrl"
-                                    :src="q.imageUrl"
-                                    class="w-16 h-16 rounded-lg object-cover bg-zinc-100"
-                                />
-                                <p class="font-bold text-zinc-800 text-lg">
-                                    {{ q.text }}
-                                </p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-2">
+                            <div class="space-y-2">
                                 <div
-                                    v-for="opt in q.options"
-                                    :key="opt.text"
-                                    class="text-sm px-3 py-1 rounded-lg border truncate"
-                                    :class="
-                                        opt.text === q.correctAnswer
-                                            ? 'bg-emerald-50 border-emerald-200 text-emerald-700 font-bold'
-                                            : 'bg-white border-zinc-100 text-zinc-500'
-                                    "
+                                    v-for="(opt, idx) in draft.options"
+                                    :key="idx"
+                                    class="flex items-center gap-3 bg-white border border-zinc-200 p-2 pr-3 rounded-xl focus-within:border-zinc-400 focus-within:ring-1 focus-within:ring-zinc-200"
                                 >
-                                    {{ opt.text }}
+                                    <RadioButton
+                                        v-model="correctIdx"
+                                        :inputId="`o${idx}`"
+                                        :value="idx"
+                                        class="ml-1"
+                                    />
+                                    <InputText
+                                        v-model="opt.text"
+                                        :placeholder="`Opsi ${idx + 1}`"
+                                        class="w-full border-none text-sm bg-transparent p-1 focus:ring-0 shadow-none"
+                                    />
                                 </div>
                             </div>
                         </div>
-                        <div class="flex flex-col gap-2">
+
+                        <div class="pt-4">
                             <Button
-                                text
-                                rounded
-                                class="w-10! h-10! text-slate-400! hover:text-slate-700! hover:bg-slate-100!"
-                                @click="openForm(q)"
-                            >
-                                <template #icon
-                                    ><i-lucide-pencil class="w-4 h-4"
-                                /></template>
-                            </Button>
-                            <Button
-                                text
-                                rounded
-                                class="w-10! h-10! text-rose-400! hover:text-rose-600! hover:bg-rose-50!"
-                                @click="remove(q.id)"
-                            >
-                                <template #icon
-                                    ><i-lucide-trash-2 class="w-4 h-4"
-                                /></template>
-                            </Button>
+                                label="Simpan"
+                                @click="save"
+                                class="w-full bg-zinc-900 text-white font-bold py-3 rounded-xl hover:bg-zinc-800"
+                            />
                         </div>
                     </div>
-                </div>
-            </section>
+                </template>
+            </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+}
+
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
+}
+.no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.stable-gutter {
+    scrollbar-gutter: stable;
+    scrollbar-width: thin;
+    scrollbar-color: #e4e4e7 transparent;
+}
+
+.stable-gutter::-webkit-scrollbar {
+    width: 6px;
+}
+.stable-gutter::-webkit-scrollbar-track {
+    background: transparent;
+}
+.stable-gutter::-webkit-scrollbar-thumb {
+    background-color: #e4e4e7;
+    border-radius: 20px;
+}
+</style>

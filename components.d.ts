@@ -21,6 +21,7 @@ declare module 'vue' {
     ILucideEdit3: typeof import('~icons/lucide/edit3')['default']
     ILucideFlame: typeof import('~icons/lucide/flame')['default']
     ILucideImage: typeof import('~icons/lucide/image')['default']
+    ILucideImagePlus: typeof import('~icons/lucide/image-plus')['default']
     ILucideLock: typeof import('~icons/lucide/lock')['default']
     ILucideLogOut: typeof import('~icons/lucide/log-out')['default']
     ILucideMail: typeof import('~icons/lucide/mail')['default']

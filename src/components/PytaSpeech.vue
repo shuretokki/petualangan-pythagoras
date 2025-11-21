@@ -80,7 +80,7 @@ const accentClass = computed(() => {
         </div>
 
         <div
-            class="relative rounded-2xl border-2 px-6 py-5 min-h-[90px] flex items-center transition-all duration-300"
+            class="relative rounded-lg border px-6 py-5 min-h-[90px] flex items-center transition-all duration-300"
             :class="containerClass"
         >
             <div class="pl-8 w-full">
@@ -99,7 +99,7 @@ const accentClass = computed(() => {
             </div>
 
             <div
-                class="absolute -bottom-[10px] left-8 w-5 h-5 bg-white border-b-2 border-r-2 transform rotate-45"
+                class="absolute -bottom-[9px] left-8 w-4 h-4 bg-white border-b-1 border-r-1 transform rotate-45"
                 :class="
                     variant === 'violet'
                         ? 'border-violet-200'
