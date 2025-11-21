@@ -102,10 +102,9 @@ const handleImg = (file: File) => {
 };
 
 const openForm = (q?: Question) => {
-    draft.value = q ? structuredClone(q) : blank();
-    correctIdx.value = q
-        ? draft.value.options.findIndex((o) => o.text === q.correctAnswer)
-        : null;
+    correctIdx.value = null;
+    draft.value = q ? JSON.parse(JSON.stringify(q)) : blank();
+
     if (correctIdx.value === -1) correctIdx.value = null;
 
     ui.editing = !!q;
@@ -120,7 +119,9 @@ const save = async () => {
     draft.value.difficulty = ui.tab;
     draft.value.correctAnswer = draft.value.options[correctIdx.value]!.text;
 
-    const target = quiz.value.questions || [];
+    // FIX: Create a shallow copy of the array to ensure reactivity triggers correctly
+    const target = [...(quiz.value.questions || [])];
+
     if (ui.editing && draft.value.id) {
         const i = target.findIndex((q) => q.id === draft.value.id);
         if (i !== -1) target[i] = { ...draft.value };
@@ -128,12 +129,14 @@ const save = async () => {
         draft.value.id = Date.now().toString();
         target.push({ ...draft.value });
     }
+
     quiz.value.questions = target;
 
     try {
         await updateDoc(doc(db, "quizzes", QUIZ_ID), { questions: target });
         ui.adding = false;
         draft.value = blank();
+        correctIdx.value = null; // Reset index after save
     } catch (e) {
         console.error(e);
     }
