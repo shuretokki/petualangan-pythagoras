@@ -108,7 +108,7 @@ const save = async () => {
     if (!quiz.value || !draft.value.text || correctIdx.value === null)
         return alert("Isi semua data.");
     draft.value.difficulty = ui.tab;
-    draft.value.correctAnswer = draft.value.options[correctIdx.value].text;
+    draft.value.correctAnswer = draft.value.options[correctIdx.value]!.text;
 
     const target = [...(quiz.value.questions || [])];
     if (draft.value.id) {
