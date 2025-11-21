@@ -40,10 +40,9 @@
 ### Contributing
 
 * This project is currently designed for a specific client use case.
-* However, if you find bugs or have suggestions for the educational content, feel free to [open an issue](https://github.com/yourusername/petualangan-pythagoras/issues/new).
+* However, if you find bugs or have suggestions for the educational content, feel free to [open an issue](https://github.com/shuretokki/petualangan-pythagoras/issues/new).
 
 ### Credits
 
-* **Development**: Built by shuretokki
 * **Assets**: Illustrations and icons provided by [Lucide](https://lucide.dev/) and custom assets.
 * **License**: This project is created for educational purposes.
