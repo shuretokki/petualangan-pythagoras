@@ -80,7 +80,7 @@ const submit = async () => {
                             <InputText
                                 v-model="form.email"
                                 type="email"
-                                placeholder="admin@sekolah.id"
+                                placeholder="admin@pythagoras.app"
                                 class="w-full pl-11 bg-zinc-50 border-zinc-200 rounded-xl py-3 text-sm focus:ring-0 focus:border-zinc-400 focus:bg-white transition-colors"
                             />
                         </div>
