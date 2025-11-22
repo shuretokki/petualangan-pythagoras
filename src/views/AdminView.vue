@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { reactive, ref, computed, watch, onMounted } from "vue";
 import { doc, getDoc, setDoc, updateDoc } from "firebase/firestore";
 import { db } from "@/firebase";
-import { useAuthStore } from "@/stores/auth";
 import type { Quiz, Question, Difficulty } from "@/types/models";
 
 const router = useRouter();
@@ -382,22 +380,5 @@ onMounted(init);
 .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
-}
-
-.stable-gutter {
-    scrollbar-gutter: stable;
-    scrollbar-width: thin;
-    scrollbar-color: #e4e4e7 transparent;
-}
-
-.stable-gutter::-webkit-scrollbar {
-    width: 6px;
-}
-.stable-gutter::-webkit-scrollbar-track {
-    background: transparent;
-}
-.stable-gutter::-webkit-scrollbar-thumb {
-    background-color: #e4e4e7;
-    border-radius: 20px;
 }
 </style>

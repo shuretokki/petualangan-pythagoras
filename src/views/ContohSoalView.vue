@@ -1,9 +1,4 @@
 <script setup lang="ts">
-import { computed, reactive } from "vue";
-import { useRouter } from "vue-router";
-import PytaSpeech from "../components/PytaSpeech.vue";
-import SectionIntro from "../components/SectionIntro.vue";
-
 interface Step {
     label: string;
     formula: string;

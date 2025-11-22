@@ -1,4 +1,9 @@
 <script setup lang="ts">
+const authStore = useAuthStore();
+onMounted(() => {
+    authStore.initAuth();
+});
+
 const route = useRoute();
 const showNavigation = computed(() => route.name !== "admin");
 </script>

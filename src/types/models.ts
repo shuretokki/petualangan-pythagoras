@@ -1,5 +1,3 @@
-// TypeScript interfaces for the application data model
-
 export interface Module {
   id: string;
   title: string;
@@ -16,11 +14,11 @@ export type Difficulty = "easy" | "medium" | "hard";
 export interface Question {
   id: string;
   text: string;
-  type: "multiple-choice"; // Simplified for this context
+  type: "multiple-choice";
   options: QuestionOption[];
-  correctAnswer: string; // Explicitly storing correct answer string for easier comparison
+  correctAnswer: string;
   difficulty: Difficulty;
-  imageUrl?: string; // Optional image URL
+  imageUrl?: string;
 }
 
 export interface Quiz {

@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { useRouter } from "vue-router";
 import mascot from "@/assets/image/mascot.png";
 
 const router = useRouter();
-
 const menu = [
     {
         route: "materi",

@@ -46,7 +46,7 @@ export const useQuizStore = defineStore("quiz", () => {
       shuffled[j] = temp;
     }
 
-    activeQuestions.value = shuffled.slice(0, 5);
+    activeQuestions.value = shuffled.slice(0, 10);
 
     currentQuestionIndex.value = 0;
     userAnswers.value = new Map();

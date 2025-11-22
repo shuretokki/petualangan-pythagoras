@@ -134,9 +134,9 @@ onUnmounted(() => {
 
 const steps = [
     {
-        title: "Rahasia Pythagoras",
+        title: "Mengenal Sisi Segitiga",
         content:
-            "Oke, di sini Pyta punya 4 segitiga siku-siku yang sama besar. Coba perhatikan sisi-sisinya ya!",
+            "Sebelum menyusun puzzle, kita kenalan dulu. Sisi tegak dan alas disebut <strong>sisi siku-siku (a & b)</strong>. Sisi miring yang terpanjang disebut <strong>Hipotenusa (c)</strong>.", // Changed content
     },
     {
         title: "Misi Menyusun",
@@ -426,41 +426,130 @@ const nav = (dir: 1 | -1) => {
                         v-if="ui.step === 0"
                         class="w-full flex justify-center mb-8"
                         v-motion
-                        :initial="{ opacity: 0, scale: 0.8 }"
+                        :initial="{ opacity: 0, scale: 0.95 }"
                         :enter="{ opacity: 1, scale: 1 }"
                     >
-                        <div class="relative w-64 h-64">
-                            <svg viewBox="0 0 200 200" class="w-full h-full">
-                                <g>
+                        <div
+                            class="relative w-full max-w-[280px] aspect-square"
+                        >
+                            <svg
+                                viewBox="-20 -20 240 240"
+                                class="w-full h-full overflow-visible"
+                            >
+                                <defs>
+                                    <filter
+                                        id="shadow"
+                                        x="-20%"
+                                        y="-20%"
+                                        width="140%"
+                                        height="140%"
+                                    >
+                                        <feDropShadow
+                                            dx="0"
+                                            dy="4"
+                                            stdDeviation="4"
+                                            flood-opacity="0.1"
+                                        />
+                                    </filter>
+                                </defs>
+
+                                <path
+                                    d="M40 40 L40 160 L160 160 Z"
+                                    fill="#ecfdf5"
+                                    stroke="#10b981"
+                                    stroke-width="3"
+                                    filter="url(#shadow)"
+                                    class="transition-all duration-500"
+                                />
+
+                                <path
+                                    d="M40 140 L60 140 L60 160"
+                                    fill="none"
+                                    stroke="#10b981"
+                                    stroke-width="2"
+                                />
+
+                                <g
+                                    class="animate-in fade-in slide-in-from-left duration-700 delay-100"
+                                >
+                                    <text
+                                        x="20"
+                                        y="100"
+                                        text-anchor="end"
+                                        class="font-serif italic font-bold fill-rose-500 text-lg"
+                                    >
+                                        a
+                                    </text>
+                                    <text
+                                        x="20"
+                                        y="115"
+                                        text-anchor="end"
+                                        class="font-sans text-[10px] font-bold fill-rose-400 uppercase tracking-wider"
+                                    >
+                                        Tinggi
+                                    </text>
                                     <path
-                                        d="M150 150 L150 110 L180 150 Z"
-                                        fill="#fbbf24"
-                                        stroke="#d97706"
-                                        stroke-width="2"
+                                        d="M30 45 L25 45 L25 155 L30 155"
+                                        fill="none"
+                                        stroke="#fb7185"
+                                        stroke-width="1.5"
                                     />
                                 </g>
-                                <g>
+
+                                <g
+                                    class="animate-in fade-in slide-in-from-bottom duration-700 delay-300"
+                                >
+                                    <text
+                                        x="100"
+                                        y="200"
+                                        text-anchor="middle"
+                                        class="font-serif italic font-bold fill-blue-500 text-lg"
+                                    >
+                                        b
+                                    </text>
+                                    <text
+                                        x="100"
+                                        y="215"
+                                        text-anchor="middle"
+                                        class="font-sans text-[10px] font-bold fill-blue-400 uppercase tracking-wider"
+                                    >
+                                        Alas
+                                    </text>
                                     <path
-                                        d="M60 40 L100 40 L60 70 Z"
-                                        fill="#fb7185"
-                                        stroke="#e11d48"
-                                        stroke-width="2"
+                                        d="M45 170 L45 175 L155 175 L155 170"
+                                        fill="none"
+                                        stroke="#60a5fa"
+                                        stroke-width="1.5"
                                     />
                                 </g>
-                                <g>
-                                    <path
-                                        d="M140 60 L140 100 L110 100 Z"
-                                        fill="#60a5fa"
-                                        stroke="#2563eb"
-                                        stroke-width="2"
-                                    />
-                                </g>
-                                <g>
-                                    <path
-                                        d="M60 140 L100 140 L60 110 Z"
-                                        fill="#34d399"
-                                        stroke="#059669"
-                                        stroke-width="2"
+
+                                <g
+                                    class="animate-in fade-in slide-in-from-right duration-700 delay-500"
+                                >
+                                    <text
+                                        x="130"
+                                        y="85"
+                                        text-anchor="start"
+                                        class="font-serif italic font-bold fill-emerald-600 text-2xl"
+                                    >
+                                        c
+                                    </text>
+                                    <text
+                                        x="130"
+                                        y="105"
+                                        text-anchor="start"
+                                        class="font-sans text-[11px] font-bold fill-emerald-600 uppercase tracking-widest bg-emerald-50 px-2 py-1 rounded-lg"
+                                    >
+                                        Hipotenusa
+                                    </text>
+                                    <line
+                                        x1="105"
+                                        y1="95"
+                                        x2="125"
+                                        y2="95"
+                                        stroke="#10b981"
+                                        stroke-width="1"
+                                        stroke-dasharray="4,2"
                                     />
                                 </g>
                             </svg>
@@ -691,6 +780,7 @@ const nav = (dir: 1 | -1) => {
 .pb-safe {
     padding-bottom: env(safe-area-inset-bottom, 20px);
 }
+
 .animate-draw {
     stroke-dasharray: 100;
     stroke-dashoffset: 100;
@@ -708,6 +798,7 @@ const nav = (dir: 1 | -1) => {
 .delay-300 {
     animation-delay: 0.3s;
 }
+
 @keyframes draw {
     to {
         stroke-dashoffset: 0;

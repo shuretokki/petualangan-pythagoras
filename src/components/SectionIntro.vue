@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import Button from "primevue/button";
 import profileEm from "@/assets/image/profile_em.png";
 import profileVi from "@/assets/image/profile_vi.png";
 

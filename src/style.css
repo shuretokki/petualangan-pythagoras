@@ -1,5 +1,4 @@
 @import "tailwindcss";
-@import "vue-easy-dnd/dist/dnd.css";
 
 @font-face {
     font-family: "Recoleta";
@@ -32,12 +31,4 @@ body {
     font-family: "Recoleta", Georgia, serif;
     font-weight: 400;
     letter-spacing: -0.02em;
-}
-
-.scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-}
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
 }
