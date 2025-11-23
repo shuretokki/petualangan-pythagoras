@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import imgSoal2 from "@/assets/image/contoh-soal/2.jpeg";
+import imgSoal3 from "@/assets/image/contoh-soal/3.jpg";
+
 interface Step {
     label: string;
     formula: string;
@@ -12,6 +15,7 @@ interface Problem {
     steps: Step[];
     answer: string;
     icon?: string;
+    image?: string;
 }
 
 const router = useRouter();
@@ -46,6 +50,7 @@ const problems: Problem[] = [
         ],
         answer: "5 meter",
         icon: "🐿️",
+        image: imgSoal2,
     },
     {
         title: "Perahu Menyeberang",
@@ -61,6 +66,7 @@ const problems: Problem[] = [
         ],
         answer: "100 meter",
         icon: "⛵",
+        image: imgSoal3,
     },
 ];
 
@@ -178,9 +184,22 @@ const back = () => {
                         :key="`card-${ui.idx}`"
                     >
                         <div
-                            class="bg-slate-50/50 border-b border-slate-100 p-6 flex justify-center"
+                            class="bg-slate-50/50 border-b border-slate-100 flex justify-center items-center"
+                            :class="curr?.image ? 'p-0 min-h-[200px]' : 'p-6'"
                         >
                             <div
+                                v-if="curr?.image"
+                                class="w-full h-full flex justify-center bg-slate-100"
+                            >
+                                <img
+                                    :src="curr.image"
+                                    class="w-full h-auto max-h-[250px] object-contain"
+                                    alt="Ilustrasi soal"
+                                />
+                            </div>
+
+                            <div
+                                v-else
                                 class="relative w-48 h-40 flex items-center justify-center"
                             >
                                 <svg
@@ -212,7 +231,7 @@ const back = () => {
                                         </linearGradient>
                                     </defs>
                                     <path
-                                        d="M40 20 L40 140 L180 140 Z"
+                                        d="M110 20 L40 140 L180 140 Z"
                                         fill="url(#vGrad)"
                                         stroke="#8b5cf6"
                                         stroke-width="3"

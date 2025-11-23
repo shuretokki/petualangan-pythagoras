@@ -9,7 +9,9 @@ const router = useRouter();
 const store = useQuizStore();
 const quizDoc = useDocument<Quiz>(doc(db, "quizzes", "quiz-pythagoras-1"));
 
-const ui = reactive({ intro: true, selecting: true });
+// Added 'review' state to toggle the review screen
+const ui = reactive({ intro: true, selecting: true, review: false });
+
 const levels = [
     {
         id: "easy",
@@ -68,8 +70,19 @@ const start = (lvl: Difficulty) => {
 
 const answer = (txt: string) =>
     curr.value && store.selectAnswer(curr.value.id, txt);
-const reset = () => (ui.selecting = true);
+
+// Reset now also resets the review state
+const reset = () => {
+    ui.selecting = true;
+    ui.review = false;
+};
+
 const home = () => router.push({ name: "home" });
+
+// Helper to check if an answer is correct for the review loop
+const isCorrect = (qId: string, correctAns: string) => {
+    return store.getUserAnswer(qId) === correctAns;
+};
 </script>
 
 <template>
@@ -103,12 +116,13 @@ const home = () => router.push({ name: "home" });
         >
             <div class="flex-none z-20 w-full flex justify-start pt-8 px-6">
                 <Button
-                    @click="home"
+                    @click="ui.review ? (ui.review = false) : home()"
                     variant="text"
                     rounded
                     class="!p-2 !px-3 flex items-center gap-2 text-zinc-900! hover:text-violet-600 hover:bg-violet-50 transition-colors text-sm font-bold"
                 >
-                    <i-lucide-arrow-left class="w-6 h-6" /> Home
+                    <i-lucide-arrow-left class="w-6 h-6" />
+                    {{ ui.review ? "Kembali ke Skor" : "Home" }}
                 </Button>
             </div>
 
@@ -274,45 +288,174 @@ const home = () => router.push({ name: "home" });
                         class="w-full flex flex-col items-center text-center pt-8"
                     >
                         <div
-                            class="mb-6"
-                            v-motion
-                            :initial="{ scale: 0 }"
-                            :enter="{
-                                scale: 1,
-                                transition: { type: 'spring' },
-                            }"
+                            v-if="!ui.review"
+                            class="w-full flex flex-col items-center"
                         >
-                            <div class="relative inline-block">
-                                <img
-                                    :src="mascotImg"
-                                    class="w-32 h-32 object-contain drop-shadow-xl"
-                                />
-                                <div
-                                    class="absolute -bottom-2 -right-2 bg-violet-600 text-white font-recoleta font-bold text-xl px-4 py-1 rounded-full border-2 border-white shadow-md rotate-3"
-                                >
-                                    {{ store.score }}%
+                            <div
+                                class="mb-6"
+                                v-motion
+                                :initial="{ scale: 0 }"
+                                :enter="{
+                                    scale: 1,
+                                    transition: { type: 'spring' },
+                                }"
+                            >
+                                <div class="relative inline-block">
+                                    <img
+                                        :src="mascotImg"
+                                        class="w-32 h-32 object-contain drop-shadow-xl"
+                                    />
+                                    <div
+                                        class="absolute -bottom-2 -right-2 bg-violet-600 text-white font-recoleta font-bold text-xl px-4 py-1 rounded-full border-2 border-white shadow-md rotate-3"
+                                    >
+                                        {{ store.score }}%
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                        <h1 class="font-recoleta text-4xl text-slate-800 mb-2">
-                            {{ resultText.title }}
-                        </h1>
-                        <p class="text-slate-500 mb-10 px-8 leading-relaxed">
-                            {{ resultText.desc }}
-                        </p>
+                            <h1
+                                class="font-recoleta text-4xl text-slate-800 mb-2"
+                            >
+                                {{ resultText.title }}
+                            </h1>
+                            <p
+                                class="text-slate-500 mb-10 px-8 leading-relaxed"
+                            >
+                                {{ resultText.desc }}
+                            </p>
 
-                        <div class="flex flex-col w-full gap-3 px-6">
-                            <Button
-                                @click="reset"
-                                label="Main Lagi / Ganti Level"
-                                class="!w-full !rounded-full !bg-violet-600 !border-violet-600 !font-bold !py-3 !text-white"
-                            />
-                            <Button
-                                @click="home"
-                                label="Home"
-                                variant="outlined"
-                                class="!w-full !rounded-full !text-violet-600 !border-violet-200 !font-bold !py-3"
-                            />
+                            <div class="flex flex-col w-full gap-3 px-6">
+                                <Button
+                                    @click="ui.review = true"
+                                    label="Lihat Pembahasan"
+                                    class="!w-full !rounded-full !bg-white !text-violet-600 !border !border-violet-200 !font-bold !py-3 hover:!bg-violet-50"
+                                />
+                                <Button
+                                    @click="reset"
+                                    label="Main Lagi / Ganti Level"
+                                    class="!w-full !rounded-full !bg-violet-600 !border-violet-600 !font-bold !py-3 !text-white"
+                                />
+                                <Button
+                                    @click="home"
+                                    label="Home"
+                                    variant="text"
+                                    class="!w-full !rounded-full !text-slate-400 !font-bold !py-3 hover:!bg-slate-50"
+                                />
+                            </div>
+                        </div>
+
+                        <div v-else class="w-full text-left animate-fade-in">
+                            <h2
+                                class="font-recoleta text-2xl text-slate-800 mb-1 px-2"
+                            >
+                                Pembahasan
+                            </h2>
+                            <p class="text-slate-500 text-sm mb-6 px-2">
+                                Review jawaban kamu di bawah ini
+                            </p>
+
+                            <div class="space-y-6">
+                                <div
+                                    v-for="(q, idx) in store.activeQuestions"
+                                    :key="q.id"
+                                    class="bg-white rounded-xl border border-slate-200 overflow-hidden"
+                                >
+                                    <div
+                                        class="bg-slate-50 p-4 border-b border-slate-100 flex gap-3"
+                                    >
+                                        <span
+                                            class="flex-none w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mt-0.5"
+                                            :class="
+                                                isCorrect(q.id, q.correctAnswer)
+                                                    ? 'bg-emerald-100 text-emerald-600'
+                                                    : 'bg-rose-100 text-rose-600'
+                                            "
+                                        >
+                                            {{ idx + 1 }}
+                                        </span>
+                                        <p
+                                            class="text-slate-800 font-medium leading-relaxed text-sm"
+                                        >
+                                            {{ q.text }}
+                                        </p>
+                                    </div>
+
+                                    <div
+                                        v-if="q.imageUrl"
+                                        class="p-4 bg-white flex justify-center border-b border-slate-50"
+                                    >
+                                        <img
+                                            :src="q.imageUrl"
+                                            class="max-h-[120px] object-contain rounded"
+                                        />
+                                    </div>
+
+                                    <div class="p-4 space-y-3">
+                                        <div class="text-sm">
+                                            <span
+                                                class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1"
+                                                >Jawaban Kamu:</span
+                                            >
+                                            <div
+                                                class="flex items-center gap-2 font-bold"
+                                                :class="
+                                                    isCorrect(
+                                                        q.id,
+                                                        q.correctAnswer,
+                                                    )
+                                                        ? 'text-emerald-600'
+                                                        : 'text-rose-600'
+                                                "
+                                            >
+                                                <i-lucide-check-circle
+                                                    v-if="
+                                                        isCorrect(
+                                                            q.id,
+                                                            q.correctAnswer,
+                                                        )
+                                                    "
+                                                    class="w-4 h-4"
+                                                />
+                                                <i-lucide-x-circle
+                                                    v-else
+                                                    class="w-4 h-4"
+                                                />
+                                                {{ store.getUserAnswer(q.id) }}
+                                            </div>
+                                        </div>
+
+                                        <div
+                                            v-if="
+                                                !isCorrect(
+                                                    q.id,
+                                                    q.correctAnswer,
+                                                )
+                                            "
+                                            class="pt-2 border-t border-slate-100"
+                                        >
+                                            <span
+                                                class="text-xs font-bold uppercase tracking-wider text-slate-400 block mb-1"
+                                                >Jawaban Benar:</span
+                                            >
+                                            <div
+                                                class="flex items-center gap-2 font-bold text-emerald-600"
+                                            >
+                                                <i-lucide-check
+                                                    class="w-4 h-4"
+                                                />
+                                                {{ q.correctAnswer }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-8 mb-4">
+                                <Button
+                                    @click="ui.review = false"
+                                    label="Tutup Pembahasan"
+                                    class="!w-full !rounded-full !bg-slate-100 !text-slate-600 !font-bold !py-3 hover:!bg-slate-200"
+                                />
+                            </div>
                         </div>
                     </div>
                 </div>

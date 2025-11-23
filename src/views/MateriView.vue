@@ -136,7 +136,7 @@ const steps = [
     {
         title: "Mengenal Sisi Segitiga",
         content:
-            "Sebelum menyusun puzzle, kita kenalan dulu. Sisi tegak dan alas disebut <strong>sisi siku-siku (a & b)</strong>. Sisi miring yang terpanjang disebut <strong>Hipotenusa (c)</strong>.", // Changed content
+            "Sebelum memulai, kita kenalan dulu. Sisi tegak dan alas disebut <strong>sisi siku-siku (a & b)</strong>. Sisi miring yang terpanjang disebut <strong>Hipotenusa (c)</strong>.", // Changed content
     },
     {
         title: "Misi Menyusun",
